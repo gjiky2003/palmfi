@@ -55,6 +55,22 @@
 <p class="text-center text-sm text-gray-400 mt-3">No obligation.</p>
 {% else %}
 <p class="text-center text-gray-500 mt-6">You may reapply in 90 days.</p>
+{% if result.adverse_action_reasons %}
+<div class="mt-8 p-6 bg-red-50 border border-red-200 rounded-xl">
+<h3 class="font-semibold text-red-800 mb-3">Adverse Action Notice</h3>
+<p class="text-sm text-gray-600 mb-4">In accordance with the Equal Credit Opportunity Act, here are the primary reasons for this decision:</p>
+<ol class="list-decimal list-inside space-y-1">
+{% for r in result.adverse_action_reasons %}
+<li class="text-sm text-gray-700">{{ r.reason }}</li>
+{% endfor %}
+</ol>
+<div class="mt-4 text-xs text-gray-500">
+<p class="mb-1"><strong>Credit Score Used:</strong> {{ result.risk_score }}</p>
+<p class="mb-1">Your credit score was obtained from a consumer reporting agency and was used in making this decision.</p>
+<p>You have the right to obtain a free copy of your consumer report from the reporting agency within 60 days.</p>
+</div>
+</div>
+{% endif %}
 {% endif %}
 </div></div>
 <footer class="bg-gray-100 py-8"><div class="text-center text-gray-500 text-sm"><p>&copy; 2026 PalmFi</p></div></footer>

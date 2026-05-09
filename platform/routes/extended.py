@@ -18,6 +18,8 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
     """
     log = app.logger
     TEMPLATE_DIR = app.template_folder
+    from flask import request, jsonify, redirect, url_for, render_template, make_response, session, g, flash
+    from config import Config
 
     # ── Settings-aware helper for routes ──
 
@@ -52,8 +54,7 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
     @app.route('/kyc', methods=['GET', 'POST'])
     @login_required
     def kyc_page(user):
-        flask = __import__('flask')
-        bid = flask.g.borrower_id
+        bid = g.borrower_id
         db = get_db()
         borrower = db.execute("SELECT * FROM borrowers WHERE id=?", (bid,)).fetchone()
         docs = db.execute("SELECT * FROM kyc_documents WHERE borrower_id=?", (bid,)).fetchall()
@@ -84,7 +85,7 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
             log.warning("Stripe Identity setup error: %s", e)
             stripe_identity_enabled = False
 
-        return flask.render_template(
+        return render_template(
             'kyc.html',
             borrower=borrower,
             docs=docs,
@@ -92,28 +93,27 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
             stripe_client_secret=client_secret,
             stripe_publishable_key=_get_settings_value('stripe',
                 'publishable_key',
-                default=__import__('config').Config.STRIPE_PUBLISHABLE_KEY if hasattr(__import__('config').Config, 'STRIPE_PUBLISHABLE_KEY') else '',
+                default=Config.STRIPE_PUBLISHABLE_KEY if hasattr(Config, 'STRIPE_PUBLISHABLE_KEY') else '',
             ),
         )
 
     @app.route('/kyc/upload', methods=['POST'])
     @login_required
     def kyc_upload(user):
-        flask = __import__('flask')
-        bid = flask.g.borrower_id
-        doc_type = flask.request.form.get('document_type', '')
+        bid = g.borrower_id
+        doc_type = request.form.get('document_type', '')
         if doc_type not in ['government_id', 'proof_of_address', 'selfie', 'bank_statement']:
-            flask.flash('Invalid document type', 'error')
-            return flask.redirect('/kyc')
-        file = flask.request.files.get('document')
+            flash('Invalid document type', 'error')
+            return redirect('/kyc')
+        file = request.files.get('document')
         if not file or file.filename == '':
-            flask.flash('No file selected', 'error')
-            return flask.redirect('/kyc')
+            flash('No file selected', 'error')
+            return redirect('/kyc')
         # Security: validate MIME type server-side
         allowed_mimes = {'application/pdf', 'image/jpeg', 'image/png'}
         if file.content_type not in allowed_mimes and file.content_type:
-            flask.flash('Invalid file type. Allowed: PDF, JPEG, PNG', 'error')
-            return flask.redirect('/kyc')
+            flash('Invalid file type. Allowed: PDF, JPEG, PNG', 'error')
+            return redirect('/kyc')
         upload_dir = os.path.join(os.path.dirname(__file__), '..', 'static', 'uploads', str(bid))
         os.makedirs(upload_dir, exist_ok=True)
         import werkzeug
@@ -123,7 +123,7 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
         # Validate extension
         if ext.lower() not in ('pdf', 'jpg', 'jpeg', 'png'):
             ext = 'bin'
-        safe_name = f"{doc_type}_{int(__import__('time').time())}.{ext}"
+        safe_name = f"{doc_type}_{int(time.time())}.{ext}"
         file_path = os.path.join(upload_dir, safe_name)
         file.save(file_path)
         db = get_db()
@@ -133,25 +133,24 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
         )
         db.commit()
         db.close()
-        flask.flash('Document uploaded! Under review.', 'success')
-        return flask.redirect('/kyc')
+        flash('Document uploaded! Under review.', 'success')
+        return redirect('/kyc')
 
     @app.route('/kyc/auto-verify', methods=['POST'])
     @login_required
     def kyc_auto_verify(user):
-        flask = __import__('flask')
-        bid = flask.g.borrower_id
+        bid = g.borrower_id
         try:
             from kyc import auto_verify_kyc
             result = auto_verify_kyc(bid)
             if result.get('approved'):
-                flask.flash('KYC verified automatically!', 'success')
+                flash('KYC verified automatically!', 'success')
             else:
-                flask.flash(f"KYC pending: {result.get('reason', 'Additional docs needed')}", 'info')
+                flash(f"KYC pending: {result.get('reason', 'Additional docs needed')}", 'info')
         except Exception as e:
             log.error("KYC auto-verify error: %s", e)
-            flask.flash('Verification unavailable. Try again.', 'error')
-        return flask.redirect('/kyc')
+            flash('Verification unavailable. Try again.', 'error')
+        return redirect('/kyc')
 
     # ── Payment Routes ──
 
@@ -159,8 +158,7 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
     @login_required
     def payments_portal(user):
         """Full payment portal page."""
-        flask = __import__('flask')
-        bid = flask.g.borrower_id
+        bid = g.borrower_id
         db = get_db()
 
         # Get active loan
@@ -195,7 +193,7 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
             from stripe_payments import get_auto_pay_status
             auto_pay = get_auto_pay_status(bid, loan['id'])
 
-        return flask.render_template(
+        return render_template(
             'payments.html',
             loan=loan,
             payments=payments,
@@ -203,21 +201,20 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
             auto_pay=auto_pay,
             now=datetime.now(timezone.utc).strftime('%Y-%m-%d'),
             borrower_name=borrower_name,
-            stripe_publishable_key=__import__('config').Config.STRIPE_PUBLISHABLE_KEY,
+            stripe_publishable_key=Config.STRIPE_PUBLISHABLE_KEY,
         )
 
     @app.route('/payments/create-intent', methods=['POST'])
     @login_required
     def payments_create_intent(user):
         """AJAX endpoint: create a Stripe PaymentIntent and return client_secret."""
-        flask = __import__('flask')
-        bid = flask.g.borrower_id
-        loan_id = flask.request.form.get('loan_id', type=int)
-        amount_cents = int(float(flask.request.form.get('amount', 0)) * 100)
-        payment_method_id = flask.request.form.get('payment_method_id', '')
+        bid = g.borrower_id
+        loan_id = request.form.get('loan_id', type=int)
+        amount_cents = int(float(request.form.get('amount', 0)) * 100)
+        payment_method_id = request.form.get('payment_method_id', '')
 
         if amount_cents < 100:
-            return flask.jsonify({'error': 'Minimum payment is $1.00'}), 400
+            return jsonify({'error': 'Minimum payment is $1.00'}), 400
 
         db = get_db()
         loan = db.execute(
@@ -227,7 +224,7 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
         db.close()
 
         if not loan:
-            return flask.jsonify({'error': 'Loan not found'}), 404
+            return jsonify({'error': 'Loan not found'}), 404
 
         from stripe_payments import create_payment_intent
         try:
@@ -240,28 +237,27 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
                     'payment_method_id': payment_method_id,
                 },
             )
-            return flask.jsonify({
+            return jsonify({
                 'client_secret': pi['client_secret'],
                 'intent_id': pi['id'],
                 'status': pi['status'],
             })
         except Exception as e:
             log.error("Create PaymentIntent error: %s", e)
-            return flask.jsonify({'error': 'Failed to create payment. Please try again.'}), 500
+            return jsonify({'error': 'Failed to create payment. Please try again.'}), 500
 
     @app.route('/payments/complete', methods=['POST'])
     @login_required
     def payments_complete(user):
         """AJAX endpoint: record a completed payment in the database."""
-        flask = __import__('flask')
-        bid = flask.g.borrower_id
-        loan_id = flask.request.form.get('loan_id', type=int)
-        amount_cents = int(flask.request.form.get('amount_cents', 0))
-        payment_intent_id = flask.request.form.get('payment_intent_id', '')
-        payment_method_id = flask.request.form.get('payment_method_id', '')
+        bid = g.borrower_id
+        loan_id = request.form.get('loan_id', type=int)
+        amount_cents = int(request.form.get('amount_cents', 0))
+        payment_intent_id = request.form.get('payment_intent_id', '')
+        payment_method_id = request.form.get('payment_method_id', '')
 
         if not payment_intent_id or amount_cents <= 0:
-            return flask.jsonify({'error': 'Invalid payment data'}), 400
+            return jsonify({'error': 'Invalid payment data'}), 400
 
         db = get_db()
         loan = db.execute(
@@ -271,7 +267,7 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
 
         if not loan:
             db.close()
-            return flask.jsonify({'error': 'Loan not found'}), 404
+            return jsonify({'error': 'Loan not found'}), 404
 
         try:
             # Record the payment
@@ -319,25 +315,24 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
         except Exception as e:
             db.rollback()
             log.error("Complete payment DB error: %s", e)
-            return flask.jsonify({'error': 'Database error'}), 500
+            return jsonify({'error': 'Database error'}), 500
         finally:
             db.close()
 
-        return flask.jsonify({'status': 'ok', 'new_balance': new_balance})
+        return jsonify({'status': 'ok', 'new_balance': new_balance})
 
     @app.route('/payments/make', methods=['POST'])
     @login_required
     def payments_make(user):
         """Make a payment: create PaymentIntent, redirect to success."""
-        flask = __import__('flask')
-        bid = flask.g.borrower_id
-        loan_id = flask.request.form.get('loan_id', type=int)
-        amount_cents = int(float(flask.request.form.get('amount', 0)) * 100)
-        payment_method_id = flask.request.form.get('payment_method_id', '')
+        bid = g.borrower_id
+        loan_id = request.form.get('loan_id', type=int)
+        amount_cents = int(float(request.form.get('amount', 0)) * 100)
+        payment_method_id = request.form.get('payment_method_id', '')
 
         if amount_cents < 100:
-            flask.flash('Minimum payment is $1.00', 'error')
-            return flask.redirect('/payments')
+            flash('Minimum payment is $1.00', 'error')
+            return redirect('/payments')
 
         db = get_db()
         loan = db.execute(
@@ -347,8 +342,8 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
         db.close()
 
         if not loan:
-            flask.flash('Loan not found', 'error')
-            return flask.redirect('/payments')
+            flash('Loan not found', 'error')
+            return redirect('/payments')
 
         from stripe_payments import create_payment_intent
         try:
@@ -393,48 +388,45 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
             finally:
                 db.close()
 
-            return flask.redirect(f'/payments/success?amount={amount_cents/100:.2f}&intent={pi["id"]}')
+            return redirect(f'/payments/success?amount={amount_cents/100:.2f}&intent={pi["id"]}')
 
         except Exception as e:
             log.error("Payment error: %s", e)
-            flask.flash('Payment processing error', 'error')
-            return flask.redirect('/payments')
+            flash('Payment processing error', 'error')
+            return redirect('/payments')
 
     @app.route('/payments/success')
     @login_required
     def payment_success(user):
         """Payment success confirmation page."""
-        flask = __import__('flask')
-        amount = flask.request.args.get('amount', '0.00')
-        intent_id = flask.request.args.get('intent', '')
-        return flask.render_template('payment_success.html', amount=amount, intent_id=intent_id)
+        amount = request.args.get('amount', '0.00')
+        intent_id = request.args.get('intent', '')
+        return render_template('payment_success.html', amount=amount, intent_id=intent_id)
 
     @app.route('/payments/history')
     @login_required
     def payment_history_json(user):
         """JSON endpoint for payment history."""
-        flask = __import__('flask')
-        bid = flask.g.borrower_id
+        bid = g.borrower_id
         db = get_db()
         payments = db.execute(
             "SELECT * FROM payments WHERE borrower_id=? ORDER BY created_at DESC LIMIT 100",
             (bid,),
         ).fetchall()
         db.close()
-        return flask.jsonify([dict(p) for p in payments])
+        return jsonify([dict(p) for p in payments])
 
     @app.route('/payments/setup-auto-pay', methods=['POST'])
     @login_required
     def setup_auto_pay(user):
         """Enable auto-pay for a loan."""
-        flask = __import__('flask')
-        bid = flask.g.borrower_id
-        loan_id = flask.request.form.get('loan_id', type=int)
-        payment_method_id = flask.request.form.get('payment_method_id', '')
+        bid = g.borrower_id
+        loan_id = request.form.get('loan_id', type=int)
+        payment_method_id = request.form.get('payment_method_id', '')
 
         if not loan_id:
-            flask.flash('Loan ID required', 'error')
-            return flask.redirect('/payments')
+            flash('Loan ID required', 'error')
+            return redirect('/payments')
 
         from stripe_payments import setup_auto_pay as sap, get_payment_methods
 
@@ -445,8 +437,8 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
                 payment_method_id = methods[0]['stripe_payment_method_id']
 
         if not payment_method_id:
-            flask.flash('Please save a payment method first', 'error')
-            return flask.redirect('/payments')
+            flash('Please save a payment method first', 'error')
+            return redirect('/payments')
 
         result = sap(bid, loan_id, payment_method_id)
 
@@ -460,39 +452,37 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
                     card_brand = m['card_brand']
                     card_last4 = m['card_last4']
                     break
-            return flask.render_template(
+            return render_template(
                 'auto_pay.html',
                 success=True,
                 card_brand=card_brand,
                 card_last4=card_last4,
             )
         else:
-            flask.flash('Failed to set up auto-pay', 'error')
-            return flask.redirect('/payments')
+            flash('Failed to set up auto-pay', 'error')
+            return redirect('/payments')
 
     @app.route('/payments/cancel-auto-pay', methods=['POST'])
     @login_required
     def cancel_auto_pay(user):
         """Disable auto-pay for a loan."""
-        flask = __import__('flask')
-        bid = flask.g.borrower_id
-        loan_id = flask.request.form.get('loan_id', type=int)
+        bid = g.borrower_id
+        loan_id = request.form.get('loan_id', type=int)
 
         if not loan_id:
-            flask.flash('Loan ID required', 'error')
-            return flask.redirect('/payments')
+            flash('Loan ID required', 'error')
+            return redirect('/payments')
 
         from stripe_payments import cancel_auto_pay as cap
         result = cap(bid, loan_id)
 
-        return flask.render_template('auto_pay.html', success=False)
+        return render_template('auto_pay.html', success=False)
 
     @app.route('/stripe/webhook', methods=['POST'])
     def stripe_webhook():
         """Handle Stripe webhook events (payments + identity)."""
-        flask = __import__('flask')
-        payload = flask.request.get_data()
-        sig = flask.request.headers.get('Stripe-Signature', '')
+        payload = request.get_data()
+        sig = request.headers.get('Stripe-Signature', '')
         webhook_secret = _get_settings_value('stripe', 'webhook_secret', default='')
 
         # Verify webhook signature when secret is configured
@@ -502,7 +492,7 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
                 event = stripe.Webhook.construct_event(payload, sig, webhook_secret)
             except Exception as e:
                 log.error("Webhook signature verification failed: %s", e)
-                return flask.jsonify({'status': 'error', 'message': 'Invalid signature'}), 400
+                return jsonify({'status': 'error', 'message': 'Invalid signature'}), 400
         else:
             log.warning("Webhook secret not configured — accepting unverified events (mock mode)")
             # Parse event without verification for mock/development
@@ -511,7 +501,7 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
                 event = stripe.Event.construct_from(json.loads(payload), stripe.api_key)
             except Exception as e:
                 log.error("Webhook parse error (mock): %s", e)
-                return flask.jsonify({'status': 'error', 'message': 'Invalid payload'}), 400
+                return jsonify({'status': 'error', 'message': 'Invalid payload'}), 400
 
         # Process the event
         result = {'status': 'received', 'type': event.type}
@@ -534,24 +524,23 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
             except Exception as e:
                 log.error("Stripe Identity webhook handler error: %s", e)
 
-        return flask.jsonify(result)
+        return jsonify(result)
 
     @app.route('/dashboard/make-payment', methods=['POST'])
     @login_required
     def make_payment(user):
-        flask = __import__('flask')
-        bid = flask.g.borrower_id
-        loan_id = flask.request.form.get('loan_id', type=int)
-        amount_cents = int(float(flask.request.form.get('amount', 0)) * 100)
+        bid = g.borrower_id
+        loan_id = request.form.get('loan_id', type=int)
+        amount_cents = int(float(request.form.get('amount', 0)) * 100)
         if amount_cents < 100:
-            flask.flash('Minimum payment is $1.00', 'error')
-            return flask.redirect('/dashboard')
+            flash('Minimum payment is $1.00', 'error')
+            return redirect('/dashboard')
         db = get_db()
         loan = db.execute("SELECT * FROM loans WHERE id=? AND borrower_id=? AND status='active'", (loan_id, bid)).fetchone()
         if not loan:
             db.close()
-            flask.flash('Loan not found', 'error')
-            return flask.redirect('/dashboard')
+            flash('Loan not found', 'error')
+            return redirect('/dashboard')
         try:
             from stripe_payments import create_payment_intent
             pi = create_payment_intent(amount_cents, bid, loan_id, {'type': 'manual_payment'})
@@ -580,36 +569,34 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
         except Exception as e:
             log.error("Payment error: %s", e)
             db.close()
-            flask.flash('Payment processing error', 'error')
-            return flask.redirect('/dashboard')
+            flash('Payment processing error', 'error')
+            return redirect('/dashboard')
 
         audit_log('payment_received', bid, 'system', {'loan_id': loan_id, 'amount_cents': amount_cents})
         db.close()
-        flask.flash(f'Payment of ${amount_cents/100:.2f} applied!', 'success')
-        return flask.redirect('/dashboard')
+        flash(f'Payment of ${amount_cents/100:.2f} applied!', 'success')
+        return redirect('/dashboard')
 
     @app.route('/dashboard/loan/<int:loan_id>')
     @login_required
     def loan_detail(user, loan_id):
-        flask = __import__('flask')
-        bid = flask.g.borrower_id
+        bid = g.borrower_id
         db = get_db()
         loan = db.execute("SELECT * FROM loans WHERE id=? AND borrower_id=?", (loan_id, bid)).fetchone()
         if not loan:
             db.close()
-            flask.flash('Loan not found', 'error')
-            return flask.redirect('/dashboard')
+            flash('Loan not found', 'error')
+            return redirect('/dashboard')
         schedule = db.execute("SELECT * FROM payment_schedules WHERE loan_id=? ORDER BY payment_number", (loan_id,)).fetchall()
         payments = db.execute("SELECT * FROM payments WHERE loan_id=? ORDER BY paid_at DESC LIMIT 20", (loan_id,)).fetchall()
         db.close()
-        return flask.render_template('loan_detail.html', loan=loan, schedule=schedule, payments=payments)
+        return render_template('loan_detail.html', loan=loan, schedule=schedule, payments=payments)
 
     # ── Collections (Admin) ──
 
     @app.route('/admin/collections')
     @admin_required
     def admin_collections(admin):
-        flask = __import__('flask')
         try:
             from loan_collections import get_collection_stats
             stats = get_collection_stats()
@@ -629,25 +616,23 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
             ORDER BY c.created_at DESC LIMIT 50
         """).fetchall()
         db.close()
-        return flask.render_template('collections_dash.html', stats=stats, overdue=overdue, records=coll)
+        return render_template('collections_dash.html', stats=stats, overdue=overdue, records=coll)
 
     @app.route('/admin/collections/run-cycle', methods=['POST'])
     @admin_required
     def admin_run_collections(admin):
-        flask = __import__('flask')
         try:
             from loan_collections import run_collections_cycle
             result = run_collections_cycle()
-            flask.flash(f"Collections: {result.get('total_processed', 0)} loans processed", 'info')
+            flash(f"Collections: {result.get('total_processed', 0)} loans processed", 'info')
         except Exception as e:
             log.error("Collections cycle error: %s", e)
-            flask.flash(f"Collections error: {e}", 'error')
-        return flask.redirect('/admin/collections')
+            flash(f"Collections error: {e}", 'error')
+        return redirect('/admin/collections')
 
     @app.route('/admin/kyc')
     @admin_required
     def admin_kyc_list(admin):
-        flask = __import__('flask')
         try:
             from kyc import list_all_pending_kyc
             pending = list_all_pending_kyc()
@@ -660,12 +645,11 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
             ORDER BY k.created_at DESC LIMIT 50
         """).fetchall()
         db.close()
-        return flask.render_template('kyc_admin.html', pending=pending, all_docs=all_docs)
+        return render_template('kyc_admin.html', pending=pending, all_docs=all_docs)
 
     @app.route('/admin/kyc/verify/<int:doc_id>', methods=['POST'])
     @admin_required
     def admin_kyc_verify(admin, doc_id):
-        flask = __import__('flask')
         db = get_db()
         doc = db.execute("SELECT * FROM kyc_documents WHERE id=?", (doc_id,)).fetchone()
         if doc:
@@ -677,37 +661,36 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
                 db.execute("UPDATE borrowers SET kyc_status='approved' WHERE id=?", (bid,))
                 audit_log('kyc_approved', bid, 'admin', {'auto': False})
             db.commit()
-            flask.flash(f'Document #{doc_id} verified', 'success')
+            flash(f'Document #{doc_id} verified', 'success')
         else:
-            flask.flash('Document not found', 'error')
+            flash('Document not found', 'error')
         db.close()
-        return flask.redirect('/admin/kyc')
+        return redirect('/admin/kyc')
 
     @app.route('/admin/kyc/reject/<int:doc_id>', methods=['POST'])
     @admin_required
     def admin_kyc_reject(admin, doc_id):
-        flask = __import__('flask')
         db = get_db()
         doc = db.execute("SELECT * FROM kyc_documents WHERE id=?", (doc_id,)).fetchone()
         if doc:
             db.execute("UPDATE kyc_documents SET verification_status='rejected' WHERE id=?", (doc_id,))
             db.execute("UPDATE borrowers SET kyc_status='denied' WHERE id=?", (doc['borrower_id'],))
             db.commit()
-            flask.flash(f'Document #{doc_id} rejected', 'info')
+            flash(f'Document #{doc_id} rejected', 'info')
         else:
-            flask.flash('Document not found', 'error')
+            flash('Document not found', 'error')
         db.close()
-        return flask.redirect('/admin/kyc')
+        return redirect('/admin/kyc')
 
     # ── Static Pages ──
 
     @app.route('/about')
     def about():
-        return __import__('flask').render_template('about.html')
+        return render_template('about.html')
 
     @app.route('/terms')
     def terms():
-        return __import__('flask').render_template('terms.html')
+        return render_template('terms.html')
 
     # ── Dashboard payments history (used by dashboard.html) ──
 
@@ -715,20 +698,19 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
     @login_required
     def payment_history(user):
         """Legacy redirect to new payment portal."""
-        flask = __import__('flask')
-        return flask.redirect('/payments')
+        return redirect('/payments')
 
     # ── API enhancements ──
 
     @app.route('/api/create-payment-intent', methods=['POST'])
     def api_create_payment():
         from stripe_payments import create_payment_intent as cpi
-        data = __import__('flask').request.get_json(silent=True) or {}
+        data = request.get_json(silent=True) or {}
         try:
             pi = cpi(data.get('amount_cents', 1000), data.get('borrower_id', 0), data.get('loan_id', 0))
-            return __import__('flask').jsonify(pi)
+            return jsonify(pi)
         except Exception as e:
-            return __import__('flask').jsonify({
+            return jsonify({
                 'client_secret': 'pi_demo_' + str(int(time.time())),
                 'id': 'pi_demo_' + str(int(time.time())),
                 'status': 'requires_payment_method',
@@ -737,45 +719,42 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
 
     @app.route('/api/stripe-webhook', methods=['POST'])
     def api_stripe_webhook():
-        flask = __import__('flask')
         try:
             from stripe_payments import process_webhook
-            payload = flask.request.get_data(as_text=True)
-            sig = flask.request.headers.get('Stripe-Signature', '')
+            payload = request.get_data(as_text=True)
+            sig = request.headers.get('Stripe-Signature', '')
             result = process_webhook(payload, sig)
-            return flask.jsonify(result)
+            return jsonify(result)
         except Exception as e:
-            log.info("Webhook received (fallback): %s bytes", len(flask.request.get_data(as_text=True)))
-            return flask.jsonify({'status': 'received'})
+            log.info("Webhook received (fallback): %s bytes", len(request.get_data(as_text=True)))
+            return jsonify({'status': 'received'})
 
     # ── Admin Settings routes ──
 
     @app.route('/admin/settings')
     @admin_required
     def admin_settings(admin):
-        flask = __import__('flask')
         try:
             sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'launch'))
             sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'automation'))
             from automation.settings import load_settings, get_config_dict
             s = load_settings()
             cfg = get_config_dict()
-            return flask.render_template('admin_settings.html', settings=s, config=cfg)
+            return render_template('admin_settings.html', settings=s, config=cfg)
         except Exception as e:
             log.error("Settings page error: %s", e)
-            flask.flash(f'Settings error: {e}', 'error')
-            return flask.redirect('/admin/dashboard')
+            flash(f'Settings error: {e}', 'error')
+            return redirect('/admin/dashboard')
 
     @app.route('/admin/settings/stripe', methods=['POST'])
     @admin_required
     def admin_settings_stripe(admin):
-        flask = __import__('flask')
         try:
             from automation.settings import load_settings, save_settings
             s = load_settings()
-            pk = flask.request.form.get('publishable_key', '').strip()
-            sk = flask.request.form.get('secret_key', '').strip()
-            ws = flask.request.form.get('webhook_secret', '').strip()
+            pk = request.form.get('publishable_key', '').strip()
+            sk = request.form.get('secret_key', '').strip()
+            ws = request.form.get('webhook_secret', '').strip()
             mode = 'live' if (pk and sk) else 'mock'
             s['stripe'].update({
                 'publishable_key': pk,
@@ -785,71 +764,67 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
             })
             s['applied'] = False
             save_settings(s)
-            flask.flash('✅ Stripe credentials saved. Click "Apply Settings" to activate.', 'success')
+            flash('✅ Stripe credentials saved. Click "Apply Settings" to activate.', 'success')
         except Exception as e:
             log.error("Save Stripe error: %s", e)
-            flask.flash(f'Error: {e}', 'error')
-        return flask.redirect('/admin/settings')
+            flash(f'Error: {e}', 'error')
+        return redirect('/admin/settings')
 
     @app.route('/admin/settings/email', methods=['POST'])
     @admin_required
     def admin_settings_email(admin):
-        flask = __import__('flask')
         try:
             from automation.settings import load_settings, save_settings
             s = load_settings()
             s['email'].update({
-                'provider': flask.request.form.get('provider', 'log'),
-                'api_key': flask.request.form.get('api_key', ''),
-                'from_address': flask.request.form.get('from_address', 'noreply@palmfi.com'),
+                'provider': request.form.get('provider', 'log'),
+                'api_key': request.form.get('api_key', ''),
+                'from_address': request.form.get('from_address', 'noreply@palmfi.com'),
             })
             s['applied'] = False
             save_settings(s)
-            flask.flash('✅ Email settings saved.', 'success')
+            flash('✅ Email settings saved.', 'success')
         except Exception as e:
-            flask.flash(f'Error: {e}', 'error')
-        return flask.redirect('/admin/settings')
+            flash(f'Error: {e}', 'error')
+        return redirect('/admin/settings')
 
     @app.route('/admin/settings/kyc', methods=['POST'])
     @admin_required
     def admin_settings_kyc(admin):
-        flask = __import__('flask')
         try:
             from automation.settings import load_settings, save_settings
             s = load_settings()
             s['kyc'].update({
-                'provider': flask.request.form.get('provider', 'mock'),
-                'api_key': flask.request.form.get('api_key', ''),
+                'provider': request.form.get('provider', 'mock'),
+                'api_key': request.form.get('api_key', ''),
             })
             s['applied'] = False
             save_settings(s)
-            flask.flash('✅ KYC settings saved.', 'success')
+            flash('✅ KYC settings saved.', 'success')
         except Exception as e:
-            flask.flash(f'Error: {e}', 'error')
-        return flask.redirect('/admin/settings')
+            flash(f'Error: {e}', 'error')
+        return redirect('/admin/settings')
 
     @app.route('/admin/settings/domain', methods=['POST'])
     @admin_required
     def admin_settings_domain(admin):
-        flask = __import__('flask')
         try:
             from automation.settings import load_settings, save_settings
             s = load_settings()
             s['domain'].update({
-                'url': flask.request.form.get('url', 'https://palm.ngrok.app').rstrip('/'),
-                'stripe_webhook_path': flask.request.form.get('stripe_webhook_path', '/stripe/webhook'),
+                'url': request.form.get('url', 'https://palm.ngrok.app').rstrip('/'),
+                'stripe_webhook_path': request.form.get('stripe_webhook_path', '/stripe/webhook'),
             })
             s['applied'] = False
             save_settings(s)
-            flask.flash('✅ Domain settings saved.', 'success')
+            flash('✅ Domain settings saved.', 'success')
         except Exception as e:
-            flask.flash(f'Error: {e}', 'error')
-        return flask.redirect('/admin/settings')
+            flash(f'Error: {e}', 'error')
+        return redirect('/admin/settings')
 
     @app.route('/admin/settings/apply', methods=['POST'])
     @admin_required
     def admin_settings_apply(admin):
-        flask = __import__('flask')
         try:
             from automation.settings import load_settings, save_settings
             s = load_settings()
@@ -860,10 +835,10 @@ def register_routes(app, get_db, login_required, admin_required, audit_log, hash
                 os.environ['STRIPE_PUBLISHABLE_KEY'] = s['stripe']['publishable_key']
             if s['email']['api_key']:
                 os.environ['EMAIL_API_KEY'] = s['email']['api_key']
-            flask.flash('✅ Settings applied! Live mode activated.', 'success')
+            flash('✅ Settings applied! Live mode activated.', 'success')
         except Exception as e:
-            flask.flash(f'Error: {e}', 'error')
-        return flask.redirect('/admin/settings')
+            flash(f'Error: {e}', 'error')
+        return redirect('/admin/settings')
 
     log.info("Extended routes registered: KYC, Payments, Collections, About, Terms, Settings")
     return app

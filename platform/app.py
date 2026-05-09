@@ -451,7 +451,18 @@ def apply(user):
             except Exception as e:
                 log.error("Scoring error: %s", e)
 
-        if score_result and score_result.get('approved') and 'risk_score' in score_result:
+        if score_result and 'risk_score' in score_result:
+            # ── Generate adverse action reasons for declined loans ──
+            if not score_result.get('approved', True):
+                try:
+                    from compliance.adverse_action import generate_reasons, format_adverse_action_notice
+                    adv_reasons = generate_reasons(scorer_input, score_result.get('risk_score', 50), False)
+                    score_result['adverse_action_reasons'] = adv_reasons
+                    # Get borrower name for the notice
+                    bname = f"{app_data.get('first_name','')} {app_data.get('last_name','')}".strip() or 'Valued Applicant'
+                    score_result['adverse_action_notice'] = format_adverse_action_notice(bname, adv_reasons)
+                except Exception as e:
+                    log.error("Failed to generate adverse action: %s", e)
             db.execute(
                 "UPDATE applications SET risk_score=?, risk_tier=?, interest_rate=?, monthly_payment=?, origination_fee=?, decision_explanation=?, status=?, decided_at=datetime('now') WHERE id=?",
                 (score_result['risk_score'], score_result['risk_tier'], score_result['interest_rate'], score_result['monthly_payment'], score_result['origination_fee'], json.dumps(score_result.get('explanation',{})), 'approved' if score_result['approved'] else 'declined', app_id)
