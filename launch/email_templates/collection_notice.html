@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Overdue - PalmFi</title>
+</head>
+<body style="margin:0;padding:0;background-color:#0f172a;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0f172a;">
+    <tr>
+      <td align="center" style="padding:40px 16px;">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#1e293b;border-radius:12px;overflow:hidden;">
+          <!-- Header -->
+          <tr>
+            <td style="padding:32px 40px 16px;text-align:center;background:linear-gradient(135deg,#dc2626,#ef4444);">
+              <span style="font-size:40px;">⚠️</span>
+              <h1 style="margin:8px 0 4px;font-size:24px;color:#ffffff;font-weight:700;">Payment Overdue</h1>
+              <p style="margin:0;font-size:14px;color:#fecaca;">Immediate action required</p>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding:32px 40px;">
+              <h2 style="margin:0 0 16px;font-size:20px;color:#f1f5f9;font-weight:600;">Hi {{ borrower_name }},</h2>
+              <p style="margin:0 0 16px;font-size:15px;color:#cbd5e1;line-height:1.6;">
+                This is a notification that your loan payment is <strong style="color:#ef4444;">{{ days_past_due }} day(s) past due</strong>. To avoid additional late fees and potential impact to your credit score, please make your payment immediately.
+              </p>
+              <!-- Overdue Details -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;background-color:#0f172a;border-radius:8px;">
+                <tr>
+                  <td style="padding:16px 20px;">
+                    <table width="100%" cellpadding="6" cellspacing="0">
+                      <tr>
+                        <td style="color:#94a3b8;font-size:13px;">Past Due Amount</td>
+                        <td style="color:#ef4444;font-size:18px;font-weight:700;text-align:right;">${{ amount_due }}</td>
+                      </tr>
+                      <tr>
+                        <td style="color:#94a3b8;font-size:13px;">Days Past Due</td>
+                        <td style="color:#fbbf24;font-size:15px;font-weight:600;text-align:right;">{{ days_past_due }} days</td>
+                      </tr>
+                      <tr>
+                        <td style="color:#94a3b8;font-size:13px;">Loan ID</td>
+                        <td style="color:#f1f5f9;font-size:14px;text-align:right;">#{{ loan_id }}</td>
+                      </tr>
+                      <tr>
+                        <td style="color:#94a3b8;font-size:13px;">Stage</td>
+                        <td style="color:#fbbf24;font-size:14px;font-weight:600;text-align:right;">{{ stage_label }}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:0 0 16px;font-size:14px;color:#cbd5e1;line-height:1.5;">
+                Continued non-payment may result in credit bureau reporting, late fees, and eventual referral to our collections department.
+              </p>
+              <!-- CTA Button -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="padding:8px 0;">
+                    <a href="{{ payment_url }}" style="display:inline-block;padding:14px 36px;background-color:#059669;color:#ffffff;text-decoration:none;border-radius:8px;font-size:16px;font-weight:600;">Pay Now</a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:12px 0 0;font-size:13px;color:#64748b;text-align:center;">
+                Need help? Call us at 1-800-555-LEND
+              </p>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding:24px 40px;background-color:#0f172a;text-align:center;">
+              <p style="margin:0;font-size:12px;color:#64748b;">
+                PalmFi Lending, Inc.<br>
+                <a href="mailto:collections@palmfi.com" style="color:#ef4444;text-decoration:none;">collections@palmfi.com</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

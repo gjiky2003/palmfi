@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Decision - PalmFi</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:"#1a365d",accent:"#059669"}}}}</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+<nav class="bg-primary text-white shadow-lg">
+<div class="max-w-7xl mx-auto px-4"><div class="flex justify-between h-16 items-center">
+<a href="/" class="text-2xl font-bold"><i class="fas fa-bolt mr-2 text-accent"></i>PalmFi</a>
+<div class="flex items-center space-x-4">
+<a href="/dashboard" class="hover:text-accent transition">Dashboard</a>
+<a href="/logout" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm">Logout</a>
+</div></div></div></nav>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}{% for cat,msg in messages %}
+<div class="max-w-7xl mx-auto px-4 mt-4"><div class="p-4 rounded-lg text-sm font-medium {{ 'bg-green-100 text-green-800' if cat=='success' else 'bg-red-100 text-red-800' if cat=='error' else 'bg-yellow-100 text-yellow-800' }}">{{ msg }}</div></div>
+{% endfor %}{% endif %}{% endwith %}
+<div class="max-w-3xl mx-auto px-4 py-12">
+<div class="text-center mb-8">
+{% if result.approved %}
+<div class="text-6xl mb-4">&#10004;</div>
+<h1 class="text-4xl font-bold text-green-600">Congratulations!</h1>
+<p class="text-xl text-gray-500 mt-2">You are approved for ${{ "{:,.0f}".format(result.loan_amount|float) }}</p>
+{% else %}
+<div class="text-6xl mb-4">&#10060;</div>
+<h1 class="text-4xl font-bold text-red-600">Application Declined</h1>
+<p class="text-xl text-gray-500 mt-2">Unable to approve at this time.</p>
+{% endif %}
+</div>
+<div class="bg-white rounded-2xl shadow-xl p-8 max-w-2xl mx-auto">
+<div class="grid grid-cols-2 gap-6 mb-8">
+<div><span class="text-gray-500">Risk Score</span><div class="text-2xl font-bold">{{ result.risk_score }}/100</div></div>
+<div><span class="text-gray-500">Risk Tier</span><div class="text-2xl font-bold">{{ result.risk_tier }} - {{ result.risk_label }}</div></div>
+<div><span class="text-gray-500">Interest Rate</span><div class="text-2xl font-bold text-accent">{{ result.interest_rate }}% APR</div></div>
+<div><span class="text-gray-500">Monthly Payment</span><div class="text-2xl font-bold">${{ "{:,.2f}".format(result.monthly_payment) }}</div></div>
+</div>
+<div class="border-t pt-6">
+<h3 class="font-semibold mb-4">AI Explanation</h3>
+<p class="text-gray-600 mb-4">{{ result.explanation.summary }}</p>
+<div class="space-y-2">
+{% for f in result.explanation.top_factors[:4] %}
+<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+<span class="text-sm">{{ f.description or f.factor.replace("_"," ").title() }}</span>
+<span class="text-sm font-semibold {{ 'text-green-600' if f.impact=='positive' else 'text-red-600' if f.impact=='negative' else 'text-yellow-600' }}">{{ f.impact|upper }}</span>
+</div>
+{% endfor %}
+</div></div>
+{% if result.approved %}
+<form method="POST" action="/accept-terms" class="mt-8">
+<input type="hidden" name="application_id" value="{{ result.application_id }}">
+<button type="submit" class="w-full bg-accent hover:bg-green-700 text-white py-4 rounded-xl font-semibold text-lg">Accept Offer and Get Funded</button>
+</form>
+<p class="text-center text-sm text-gray-400 mt-3">No obligation.</p>
+{% else %}
+<p class="text-center text-gray-500 mt-6">You may reapply in 90 days.</p>
+{% endif %}
+</div></div>
+<footer class="bg-gray-100 py-8"><div class="text-center text-gray-500 text-sm"><p>&copy; 2026 PalmFi</p></div></footer>
+</body></html>

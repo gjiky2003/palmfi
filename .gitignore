@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.env
+*.db
+logs/
+autopilot_status_last.json
+autopilot.log
+.DS_Store
+.venv/
+*.egg-info/
+dist/

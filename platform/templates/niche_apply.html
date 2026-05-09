@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Apply - {{ niche.label }} - PalmFi</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#1a365d',accent:'#059669',gold:'#d4a017'}}}}</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-sans">
+<nav class="bg-primary text-white px-6 py-4 flex justify-between items-center shadow-lg">
+  <a href="/dashboard" class="text-xl font-bold"><i class="fas fa-leaf mr-2"></i>PalmFi</a>
+  <div class="flex items-center space-x-4">
+    <a href="/niche/{{ niche_id }}" class="text-sm hover:text-gold transition"><i class="fas fa-arrow-left mr-1"></i>Back to Program</a>
+    <a href="/logout" class="bg-red-600 px-3 py-1.5 rounded-lg text-sm hover:bg-red-700 transition">Logout</a>
+  </div>
+</nav>
+<div class="max-w-3xl mx-auto px-4 py-8">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for cat, msg in messages %}
+      <div class="mb-4 p-3 rounded-lg text-sm {{ 'bg-green-100 text-green-800' if cat=='success' else 'bg-red-100 text-red-800' if cat=='error' else 'bg-blue-100 text-blue-800' }}">{{ msg }}</div>
+    {% endfor %}{% endif %}
+  {% endwith %}
+
+  <div class="bg-white rounded-2xl shadow-xl p-8">
+    <div class="flex items-center mb-6">
+      <div class="w-14 h-14 bg-gradient-to-br from-primary to-blue-700 rounded-2xl flex items-center justify-center text-white text-2xl mr-4">
+        <i class="fas {{ niche.icon }}"></i>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-primary">{{ niche.label }}</h1>
+        <p class="text-sm text-gray-500">Specialized application for {{ niche.label|lower }}</p>
+      </div>
+    </div>
+
+    <form method="POST" action="/niche/{{ niche_id }}/apply/submit">
+      <!-- Niche-specific info -->
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+        <h3 class="font-semibold text-sm text-blue-800 mb-2"><i class="fas fa-info-circle mr-1"></i>Before you apply</h3>
+        <ul class="text-sm text-blue-700 space-y-1">
+          {% if niche_id == 'gig_worker' %}
+          <li><i class="fas fa-check mr-1 text-accent"></i> Have your platform earnings summary ready</li>
+          <li><i class="fas fa-check mr-1 text-accent"></i> Bank statements from the last 3 months</li>
+          <li><i class="fas fa-check mr-1 text-accent"></i> Income up to {{ "%.1f"|format(niche.income_weight * 100) }}% of your actual earnings</li>
+          <li class="text-blue-600 font-medium mt-2"><i class="fas fa-star mr-1"></i> Recommended: income-share payment plan</li>
+          {% elif niche_id == 'immigrant' %}
+          <li><i class="fas fa-check mr-1 text-accent"></i> ITIN or SSN accepted</li>
+          <li><i class="fas fa-check mr-1 text-accent"></i> We use bank cash flow + rent history as credit</li>
+          <li><i class="fas fa-check mr-1 text-accent"></i> Employment letter helps but not required</li>
+          <li class="text-blue-600 font-medium mt-2"><i class="fas fa-star mr-1"></i> Recommended: secured credit builder</li>
+          {% elif niche_id == 'medical' %}
+          <li><i class="fas fa-check mr-1 text-accent"></i> Treatment cost estimate from your provider</li>
+          <li><i class="fas fa-check mr-1 text-accent"></i> Insurance EOB if applicable</li>
+          <li><i class="fas fa-check mr-1 text-accent"></i> Competitive rates from {{ "%.1f"|format(niche.interest_adjustment) }}% APR</li>
+          <li class="text-blue-600 font-medium mt-2"><i class="fas fa-star mr-1"></i> Recommended: direct-pay to provider</li>
+          {% endif %}
+        </ul>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Loan Amount</label>
+          <div class="relative">
+            <span class="absolute left-3 top-2.5 text-gray-400">$</span>
+            <input type="number" name="loan_amount" min="500" max="{{ niche.max_loan }}" step="100" placeholder="500 - {{ '{:,.0f}'.format(niche.max_loan) }}" required
+                   class="w-full pl-8 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-accent focus:outline-none">
+          </div>
+          <p class="text-xs text-gray-400 mt-1">Maximum for this program: ${{ "{:,.0f}".format(niche.max_loan) }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Loan Purpose</label>
+          <select name="loan_purpose" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent focus:outline-none">
+            {% if niche_id == 'gig_worker' %}
+            <option value="equipment">Equipment / Tools</option>
+            <option value="vehicle_repair">Vehicle Repair</option>
+            <option value="business_expenses">Business Expenses</option>
+            <option value="debt_consolidation">Debt Consolidation</option>
+            <option value="other">Other</option>
+            {% elif niche_id == 'immigrant' %}
+            <option value="credit_builder">Credit Building</option>
+            <option value="education">Education / Certification</option>
+            <option value="rent_deposit">Rent / Deposit</option>
+            <option value="transportation">Transportation</option>
+            <option value="other">Other</option>
+            {% elif niche_id == 'medical' %}
+            <option value="dental">Dental Surgery</option>
+            <option value="lasik">LASIK / Vision</option>
+            <option value="fertility">Fertility Treatment</option>
+            <option value="elective_surgery">Elective Surgery</option>
+            <option value="other">Other Medical</option>
+            {% endif %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Desired Term</label>
+          <select name="term_months" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent focus:outline-none">
+            <option value="12">12 months</option>
+            <option value="24" selected>24 months</option>
+            <option value="36">36 months</option>
+            <option value="48">48 months</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mt-8 text-center">
+        <button type="submit" class="bg-accent text-white px-10 py-3 rounded-xl text-lg font-semibold hover:bg-emerald-700 transition shadow-lg">
+          <i class="fas fa-arrow-right mr-2"></i>Continue to Full Application
+        </button>
+        <p class="text-xs text-gray-400 mt-2">You'll complete the full application on the next page</p>
+      </div>
+    </form>
+  </div>
+</div>
+</body></html>

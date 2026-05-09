@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Compliance Dashboard - PalmFi</title>
+<script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#1a365d',accent:'#2b6cb0',gold:'#d4a017'}}}}</script></head>
+<body class="bg-gray-50 font-sans">
+<nav class="bg-primary text-white px-6 py-4 flex justify-between items-center shadow-lg">
+  <h1 class="text-xl font-bold"><i class="fas fa-gavel mr-2"></i>PalmFi Compliance</h1>
+  <div class="flex items-center space-x-4">
+    <a href="/admin/dashboard" class="text-sm hover:text-gold"><i class="fas fa-tachometer-alt mr-1"></i>Admin</a>
+    <a href="/admin/portfolio" class="text-sm hover:text-gold"><i class="fas fa-chart-pie mr-1"></i>Portfolio</a>
+    <a href="/admin/applications" class="text-sm hover:text-gold"><i class="fas fa-file-alt mr-1"></i>Apps</a>
+    <a href="/admin/borrowers" class="text-sm hover:text-gold"><i class="fas fa-users mr-1"></i>Borrowers</a>
+    <a href="/admin/funding" class="text-sm hover:text-gold"><i class="fas fa-chart-line mr-1"></i>Funding</a>
+    <a href="/admin/collections" class="text-sm hover:text-gold"><i class="fas fa-exclamation-triangle mr-1"></i>Collections</a>
+    <a href="/admin/logout" class="bg-red-600 px-3 py-1.5 rounded-lg text-sm hover:bg-red-700">Logout</a>
+  </div>
+</nav>
+<div class="max-w-7xl mx-auto px-4 py-8">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for cat, msg in messages %}
+      <div class="mb-4 p-3 rounded-lg text-sm bg-yellow-100 text-yellow-800">{{ msg }}</div>
+    {% endfor %}{% endif %}
+  {% endwith %}
+
+  <h1 class="text-2xl font-bold text-primary mb-6">Compliance Dashboard</h1>
+
+  <div class="grid md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl shadow">
+      <h2 class="font-semibold mb-3"><i class="fas fa-landmark mr-1 text-accent"></i>State Licensing Check</h2>
+      <form method="POST" action="/admin/compliance/check-state" class="space-y-3" id="stateCheckForm">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs text-gray-500">State</label>
+            <input type="text" name="state" value="CA" class="w-full border rounded px-2 py-1 text-sm">
+          </div>
+          <div>
+            <label class="text-xs text-gray-500">Loan Amount</label>
+            <input type="number" name="loan_amount" value="10000" class="w-full border rounded px-2 py-1 text-sm">
+          </div>
+          <div>
+            <label class="text-xs text-gray-500">APR %</label>
+            <input type="number" step="0.01" name="apr" value="15" class="w-full border rounded px-2 py-1 text-sm">
+          </div>
+          <div>
+            <label class="text-xs text-gray-500">Orig Fee %</label>
+            <input type="number" step="0.1" name="fee" value="3" class="w-full border rounded px-2 py-1 text-sm">
+          </div>
+        </div>
+        <button type="submit" class="bg-accent text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 w-full">
+          <i class="fas fa-check mr-1"></i>Check Compliance
+        </button>
+      </form>
+      <div id="complianceResult" class="mt-3 text-sm"></div>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow">
+      <h2 class="font-semibold mb-3"><i class="fas fa-file-contract mr-1 text-gold"></i>State Rules (Sample)</h2>
+      <div class="text-xs space-y-1 max-h-60 overflow-y-auto">
+        {% for state, rules in state_rules.items() %}
+          <div class="border-b py-1">
+            <strong>{{ state }}</strong>: Max APR {{ rules.max_apr }}% | Max ${{ "{:,.0f}".format(rules.max_loan_amount) }} | Fee {{ rules.max_origination_fee_pct }}%
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow">
+      <h2 class="font-semibold mb-3"><i class="fas fa-balance-scale mr-1 text-accent"></i>Federal Compliance</h2>
+      <p class="text-sm text-gray-600">Military Lending Act cap: <strong>36% APR</strong></p>
+      <p class="text-sm mt-2">All loans automatically screened against MLA limits.</p>
+      <p class="text-sm mt-2">TILA disclosures generated for every funded loan.</p>
+      <p class="text-sm mt-2">E-SIGN consent captured before loan consummation.</p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-lg p-6">
+    <h2 class="font-semibold text-gray-700 mb-4"><i class="fas fa-list mr-1"></i>Recent Loans</h2>
+    {% if recent_loans %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead><tr class="bg-gray-50 text-gray-600 text-xs uppercase">
+            <th class="p-2 text-left">ID</th><th class="p-2 text-left">Borrower</th><th class="p-2 text-right">Amount</th>
+            <th class="p-2 text-right">APR</th><th class="p-2 text-center">Tier</th><th class="p-2 text-center">Status</th>
+          </tr></thead>
+          <tbody>
+            {% for l in recent_loans %}
+              <tr class="border-t hover:bg-gray-50">
+                <td class="p-2">#{{ l.id }}</td>
+                <td class="p-2">{{ l.first_name }} {{ l.last_name }}</td>
+                <td class="p-2 text-right">${{ "{:,.0f}".format(l.principal) }}</td>
+                <td class="p-2 text-right">{{ "{:.2f}".format(l.interest_rate) }}%</td>
+                <td class="p-2 text-center">{{ l.risk_tier or '?' }}</td>
+                <td class="p-2 text-center"><span class="text-xs px-2 py-0.5 rounded-full {{ 'bg-green-100 text-green-700' if l.status=='active' else 'bg-blue-100 text-blue-700' if l.status=='paid_off' else 'bg-red-100 text-red-700' if l.status=='charged_off' else 'bg-yellow-100 text-yellow-700' }}">{{ l.status|replace('_', ' ')|title }}</span></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-gray-400 text-sm text-center py-4">No loans yet</p>
+    {% endif %}
+  </div>
+</div>
+<script>
+document.getElementById('stateCheckForm')?.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const data = new FormData(form);
+  const resultDiv = document.getElementById('complianceResult');
+  resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Checking...';
+  try {
+    const resp = await fetch(form.action, { method: 'POST', body: data });
+    const json = await resp.json();
+    if (json.compliant) {
+      resultDiv.innerHTML = '<span class="text-green-600 font-semibold"><i class="fas fa-check-circle mr-1"></i>COMPLIANT</span>';
+    } else {
+      let html = '<span class="text-red-600 font-semibold"><i class="fas fa-times-circle mr-1"></i>NON-COMPLIANT</span>';
+      if (json.violations && json.violations.length) {
+        html += '<ul class="mt-2 text-red-500 text-xs">';
+        json.violations.forEach(v => { html += '<li>• ' + v + '</li>'; });
+        html += '</ul>';
+      }
+      resultDiv.innerHTML = html;
+    }
+  } catch(e) {
+    resultDiv.innerHTML = '<span class="text-red-500">Error checking compliance</span>';
+  }
+});
+</script>
+</body></html>

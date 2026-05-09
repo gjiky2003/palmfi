@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Connect Bank - PalmFi</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:"#1a365d",accent:"#059669"}}}}</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+<nav class="bg-primary text-white shadow-lg">
+<div class="max-w-7xl mx-auto px-4"><div class="flex justify-between h-16 items-center">
+<a href="/" class="text-2xl font-bold"><i class="fas fa-bolt mr-2 text-accent"></i>PalmFi</a>
+<div class="flex items-center space-x-4">
+<a href="/dashboard" class="hover:text-accent transition">Dashboard</a>
+<a href="/apply" class="hover:text-accent transition">Apply</a>
+<a href="/logout" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm">Logout</a>
+</div></div></div></nav>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}{% for cat,msg in messages %}
+<div class="max-w-7xl mx-auto px-4 mt-4"><div class="p-4 rounded-lg text-sm font-medium {{ 'bg-green-100 text-green-800' if cat=='success' else 'bg-red-100 text-red-800' if cat=='error' else 'bg-yellow-100 text-yellow-800' }}">{{ msg }}</div></div>
+{% endfor %}{% endif %}{% endwith %}
+<div class="max-w-3xl mx-auto px-4 py-12">
+<div class="text-center mb-10">
+  <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-university text-3xl text-accent"></i></div>
+  <h1 class="text-4xl font-bold text-primary">Connect Your Bank Account</h1>
+  <p class="text-gray-500 mt-2 max-w-lg mx-auto">Link your bank to unlock higher approval odds and better rates. We analyze cash flow — not just credit scores.</p>
+</div>
+
+{% if connected %}
+<div class="bg-white rounded-2xl shadow-xl p-8 text-center">
+  <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-check-circle text-3xl text-green-600"></i></div>
+  <h2 class="text-2xl font-bold text-green-600 mb-2">Bank Connected!</h2>
+  <p class="text-gray-500 mb-6">{{ bank_name }} ending in {{ account_last4 }}</p>
+  <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6 text-left">
+    <h3 class="font-semibold text-green-800 mb-2"><i class="fas fa-chart-line mr-2"></i>What We Analyzed</h3>
+    <ul class="text-sm text-green-700 space-y-1">
+      <li><i class="fas fa-check mr-2"></i>{{ months_analyzed }} months of transaction history</li>
+      <li><i class="fas fa-check mr-2"></i>Average monthly income: <strong>${{ "{:,.0f}".format(cf_income) }}</strong></li>
+      <li><i class="fas fa-check mr-2"></i>Cash flow health score: <strong>{{ cf_score }}/100</strong></li>
+      {% if cf_boosted %}
+      <li><i class="fas fa-star text-yellow-500 mr-2"></i><strong>Your cash flow data improved your rate!</strong></li>
+      {% endif %}
+    </ul>
+  </div>
+  <a href="/apply" class="bg-accent hover:bg-green-700 text-white px-8 py-3 rounded-xl font-semibold inline-block">Continue to Application</a>
+</div>
+{% else %}
+<div class="grid md:grid-cols-2 gap-6">
+  <!-- Option 1: Simulated Plaid-style connection -->
+  <div class="bg-white rounded-2xl shadow-xl p-8 text-center border-2 border-accent/30 hover:border-accent transition cursor-pointer" onclick="showConnection()">
+    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-university text-2xl text-accent"></i></div>
+    <h2 class="text-xl font-bold mb-2">Connect Instantly</h2>
+    <p class="text-sm text-gray-500 mb-4">Link your bank account with Plaid to analyze real transaction data.</p>
+    <div class="flex items-center justify-center space-x-2 text-xs text-gray-400">
+      <span>🔒 256-bit encryption</span>
+      <span>•</span>
+      <span>⚡ 30 seconds</span>
+    </div>
+  </div>
+
+  <!-- Option 2: Upload statements -->
+  <div class="bg-white rounded-2xl shadow-xl p-8 text-center hover:border-accent transition cursor-pointer border-2 border-transparent" onclick="showUpload()">
+    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-file-upload text-2xl text-purple-600"></i></div>
+    <h2 class="text-xl font-bold mb-2">Upload Bank PDF</h2>
+    <p class="text-sm text-gray-500 mb-4">Upload 3 months of bank statements (PDF) for manual review.</p>
+    <div class="flex items-center justify-center space-x-2 text-xs text-gray-400">
+      <span>📄 PDF accepted</span>
+      <span>•</span>
+      <span>⏱ 1-2 business days</span>
+    </div>
+  </div>
+</div>
+
+<!-- Connection modal (simulated) -->
+<div id="connectModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" onclick="if(event.target==this)hideModal()">
+  <div class="bg-white rounded-2xl p-8 max-w-md mx-4 shadow-2xl">
+    <div class="text-center mb-6">
+      <div class="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-university text-white text-2xl"></i></div>
+      <h3 class="text-xl font-bold">Select Your Bank</h3>
+      <p class="text-sm text-gray-500">Demo mode — pick a simulated bank profile</p>
+    </div>
+    <form method="POST" action="/connect-bank" class="space-y-3">
+      <div class="space-y-2">
+        {% for bank_id, bank_name, desc in banks %}
+        <label class="flex items-center p-4 border rounded-xl hover:bg-gray-50 cursor-pointer transition has-[:checked]:border-accent has-[:checked]:bg-green-50">
+          <input type="radio" name="bank_profile" value="{{ bank_id }}" class="mr-3 accent-accent" {% if loop.first %}checked{% endif %}>
+          <div>
+            <div class="font-semibold text-sm">{{ bank_name }}</div>
+            <div class="text-xs text-gray-400">{{ desc }}</div>
+          </div>
+        </label>
+        {% endfor %}
+      </div>
+      <div class="border-t pt-4 mt-4">
+        <div class="flex items-center gap-2 text-xs text-gray-500 mb-4">
+          <i class="fas fa-lock text-accent"></i>
+          <span>Your credentials are never stored. Read-only access.</span>
+        </div>
+        <button type="submit" class="w-full bg-accent hover:bg-green-700 text-white py-3 rounded-xl font-semibold">
+          <i class="fas fa-link mr-2"></i>Connect & Analyze
+        </button>
+      </div>
+    </form>
+    <button onclick="hideModal()" class="mt-3 w-full text-sm text-gray-400 hover:text-gray-600">Skip for now</button>
+  </div>
+</div>
+
+<!-- Upload modal -->
+<div id="uploadModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" onclick="if(event.target==this)hideModal()">
+  <div class="bg-white rounded-2xl p-8 max-w-md mx-4 shadow-2xl">
+    <div class="text-center mb-6">
+      <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-file-pdf text-purple-600 text-2xl"></i></div>
+      <h3 class="text-xl font-bold">Upload Bank Statements</h3>
+      <p class="text-sm text-gray-500">Upload PDFs for the last 3 months</p>
+    </div>
+    <form method="POST" action="/connect-bank" enctype="multipart/form-data">
+      <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-accent transition cursor-pointer mb-4" onclick="document.getElementById('fileInput').click()">
+        <i class="fas fa-cloud-upload-alt text-4xl text-gray-300 mb-3"></i>
+        <p class="text-sm font-medium text-gray-600">Click to upload PDF files</p>
+        <p class="text-xs text-gray-400">or drag and drop</p>
+        <input type="file" id="fileInput" name="statements" accept=".pdf" multiple class="hidden" onchange="document.getElementById('uploadBtn').disabled=false;this.parentElement.classList.add('border-accent','bg-green-50')">
+      </div>
+      <input type="hidden" name="upload_mode" value="true">
+      <button type="submit" id="uploadBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-xl font-semibold disabled:opacity-50" disabled>
+        <i class="fas fa-upload mr-2"></i>Upload for Analysis
+      </button>
+    </form>
+    <button onclick="hideModal()" class="mt-3 w-full text-sm text-gray-400 hover:text-gray-600">Skip for now</button>
+  </div>
+</div>
+
+<!-- Skip option -->
+<div class="text-center mt-6">
+  <a href="/apply" class="text-sm text-gray-400 hover:text-accent">Skip bank connection — apply with credit score only</a>
+</div>
+{% endif %}
+</div>
+
+<script>
+function showConnection() { document.getElementById('connectModal').classList.remove('hidden'); }
+function showUpload() { document.getElementById('uploadModal').classList.remove('hidden'); }
+function hideModal() {
+  document.getElementById('connectModal').classList.add('hidden');
+  document.getElementById('uploadModal').classList.add('hidden');
+}
+</script>
+
+<footer class="bg-gray-100 py-8"><div class="text-center text-gray-500 text-sm"><p>&copy; 2026 PalmFi — NMLS #000000 | Equal Opportunity Lender</p></div></footer>
+</body></html>

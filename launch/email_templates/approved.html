@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loan Approved - PalmFi</title>
+</head>
+<body style="margin:0;padding:0;background-color:#0f172a;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0f172a;">
+    <tr>
+      <td align="center" style="padding:40px 16px;">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#1e293b;border-radius:12px;overflow:hidden;">
+          <!-- Header -->
+          <tr>
+            <td style="padding:32px 40px 16px;text-align:center;background:linear-gradient(135deg,#059669,#10b981);">
+              <span style="font-size:48px;">🎉</span>
+              <h1 style="margin:8px 0 4px;font-size:26px;color:#ffffff;font-weight:700;">Congratulations!</h1>
+              <p style="margin:0;font-size:14px;color:#d1fae5;">Your loan has been approved</p>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding:32px 40px;">
+              <h2 style="margin:0 0 16px;font-size:20px;color:#f1f5f9;font-weight:600;">Hi {{ borrower_name }},</h2>
+              <p style="margin:0 0 16px;font-size:15px;color:#cbd5e1;line-height:1.6;">
+                Great news! Your loan application has been <strong style="color:#10b981;">approved</strong>. Funds are being prepared for disbursement to your account.
+              </p>
+              <!-- Loan Details -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;background-color:#0f172a;border-radius:8px;">
+                <tr>
+                  <td style="padding:16px 20px;">
+                    <table width="100%" cellpadding="6" cellspacing="0">
+                      <tr>
+                        <td style="color:#94a3b8;font-size:13px;">Loan Amount</td>
+                        <td style="color:#f1f5f9;font-size:15px;font-weight:600;text-align:right;">${{ loan_amount }}</td>
+                      </tr>
+                      <tr>
+                        <td style="color:#94a3b8;font-size:13px;">Interest Rate</td>
+                        <td style="color:#f1f5f9;font-size:15px;font-weight:600;text-align:right;">{{ interest_rate }}% APR</td>
+                      </tr>
+                      <tr>
+                        <td style="color:#94a3b8;font-size:13px;">Term</td>
+                        <td style="color:#f1f5f9;font-size:15px;font-weight:600;text-align:right;">{{ loan_term }} months</td>
+                      </tr>
+                      <tr>
+                        <td style="color:#94a3b8;font-size:13px;">Monthly Payment</td>
+                        <td style="color:#f1f5f9;font-size:15px;font-weight:600;text-align:right;">${{ monthly_payment }}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:0 0 8px;font-size:14px;color:#cbd5e1;line-height:1.5;">
+                Funds will be deposited to your connected bank account within 1-2 business days.
+              </p>
+              <!-- CTA Button -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="padding:16px 0 8px;">
+                    <a href="{{ dashboard_url }}" style="display:inline-block;padding:14px 36px;background-color:#059669;color:#ffffff;text-decoration:none;border-radius:8px;font-size:16px;font-weight:600;">View Loan Details</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding:24px 40px;background-color:#0f172a;text-align:center;">
+              <p style="margin:0;font-size:12px;color:#64748b;">
+                PalmFi Lending, Inc.<br>
+                <a href="mailto:support@palmfi.com" style="color:#10b981;text-decoration:none;">support@palmfi.com</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PalmFi — Launch Dashboard</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; }
+.container { max-width: 1000px; margin: 0 auto; padding: 30px 20px; }
+h1 { font-size: 2rem; color: #f0f0f0; margin-bottom: 8px; }
+h1 span { color: #059669; }
+.subtitle { color: #94a3b8; font-size: 0.95rem; margin-bottom: 32px; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 40px; }
+.stat-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; text-align: center; }
+.stat-card .number { font-size: 2.2rem; font-weight: 700; color: #f0f0f0; }
+.stat-card .label { font-size: 0.85rem; color: #94a3b8; margin-top: 4px; }
+.stat-card.done .number { color: #10b981; }
+.stat-card.live .number { color: #3b82f6; }
+.stat-card.running .number { color: #f59e0b; }
+.phase { margin-bottom: 40px; }
+.phase h2 { font-size: 1.3rem; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #334155; display: flex; align-items: center; gap: 10px; }
+.phase h2 .badge { font-size: 0.7rem; background: #334155; padding: 2px 10px; border-radius: 20px; color: #94a3b8; }
+.checklist { display: flex; flex-direction: column; gap: 4px; }
+.item { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 14px 16px; display: flex; align-items: flex-start; gap: 14px; transition: all 0.2s; }
+.item:hover { border-color: #475569; }
+.item .checkbox { width: 20px; height: 20px; border: 2px solid #64748b; border-radius: 4px; flex-shrink: 0; margin-top: 2px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+.item.done { opacity: 0.7; }
+.item.done .checkbox { background: #10b981; border-color: #10b981; }
+.item.running .checkbox { background: #f59e0b; border-color: #f59e0b; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+.item.done .checkbox::after { content: "✓"; color: #0f172a; font-weight: bold; }
+.item .details { flex: 1; }
+.item .details .title { font-weight: 600; font-size: 0.95rem; }
+.item .details .desc { color: #94a3b8; font-size: 0.85rem; margin-top: 2px; }
+.item .details .link { color: #3b82f6; font-size: 0.82rem; margin-top: 2px; display: inline-block; text-decoration: none; }
+.item .details .link:hover { text-decoration: underline; }
+.item .status-badge { font-size: 0.7rem; padding: 2px 10px; border-radius: 20px; background: #334155; color: #94a3b8; flex-shrink: 0; }
+.item.done .status-badge { background: #064e3b; color: #6ee7b7; }
+.item.running .status-badge { background: #78350f; color: #fcd34d; }
+.sub-items { margin-left: 34px; margin-top: 4px; display: flex; flex-direction: column; gap: 3px; }
+.sub-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #1a2332; border-radius: 6px; font-size: 0.85rem; }
+.sub-item .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.sub-item .dot.green { background: #10b981; }
+.sub-item .dot.yellow { background: #f59e0b; }
+.sub-item .dot.gray { background: #475569; }
+.notes { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; margin-bottom: 40px; }
+.notes h3 { font-size: 1rem; color: #f0f0f0; margin-bottom: 12px; }
+.notes ul { list-style: none; }
+.notes ul li { padding: 6px 0; color: #94a3b8; font-size: 0.88rem; }
+.notes ul li::before { content: "› "; color: #059669; font-weight: bold; }
+@media (max-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🌴 <span>PalmFi</span> Launch Dashboard</h1>
+  <p class="subtitle">Complete operational checklist for the AI-native lending platform. Track your progress from LLC → Live.</p>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="number" id="total">0</div>
+      <div class="label">Total Items</div>
+    </div>
+    <div class="stat-card done">
+      <div class="number" id="done">0</div>
+      <div class="label">Completed</div>
+    </div>
+    <div class="stat-card running">
+      <div class="number" id="running">0</div>
+      <div class="label">In Progress</div>
+    </div>
+    <div class="stat-card live">
+      <div class="number" id="remaining">0</div>
+      <div class="label">Remaining</div>
+    </div>
+  </div>
+
+  <!-- Phase A: Legal & Banking -->
+  <div class="phase">
+    <h2>📋 Phase A — Legal & Banking <span class="badge">1-2 weeks</span></h2>
+    <div class="checklist" id="phaseA">
+      <div class="item running">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Form PalmFi Lending LLC (Delaware)</div>
+          <div class="desc">File Certificate of Formation with Delaware Division of Corporations</div>
+        </div>
+        <div class="status-badge">In Progress</div>
+      </div>
+      <div class="sub-items" id="subA1">
+        <div class="sub-item"><span class="dot gray"></span> Choose LLC name — "PalmFi Lending LLC"</div>
+        <div class="sub-item"><span class="dot gray"></span> File Certificate of Formation (online, $90 filing fee)</div>
+        <div class="sub-item"><span class="dot gray"></span> Get Registered Agent (Northwest / LegalZoom / IncFile ~$50-100/yr)</div>
+        <div class="sub-item"><span class="dot gray"></span> Receive filed Certificate of Formation (1-3 business days)</div>
+        <div class="sub-item"><span class="dot gray"></span> Wait for filing confirmation email</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Get EIN from IRS</div>
+          <div class="desc">Employer Identification Number — required for bank account, Stripe, taxes</div>
+          <a class="link" href="https://www.irs.gov/ein" target="_blank">irs.gov/ein → apply online (free, instant)</a>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Create Operating Agreement</div>
+          <div class="desc">LLC operating agreement — defines ownership, management structure, member responsibilities</div>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Open Business Bank Account</div>
+          <div class="desc">Mercury (recommended for fintech) or Relay/Brex — no monthly fees</div>
+          <a class="link" href="https://mercury.com" target="_blank">mercury.com → apply with LLC docs + EIN</a>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="sub-items">
+        <div class="sub-item"><span class="dot gray"></span> Apply for Mercury account</div>
+        <div class="sub-item"><span class="dot gray"></span> Wait for approval (usually 1-3 business days)</div>
+        <div class="sub-item"><span class="dot gray"></span> Deposit initial capital (recommended: $10,000-$25,000)</div>
+        <div class="sub-item"><span class="dot gray"></span> Order debit card + set up online banking</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Register for Stripe (Live Mode)</div>
+          <div class="desc">Sign up with LLC name + EIN, link Mercury bank account for payouts</div>
+          <a class="link" href="https://dashboard.stripe.com/register" target="_blank">dashboard.stripe.com/register</a>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="sub-items">
+        <div class="sub-item"><span class="dot gray"></span> Create Stripe account under LLC name</div>
+        <div class="sub-item"><span class="dot gray"></span> Link Mercury bank account for payouts</div>
+        <div class="sub-item"><span class="dot gray"></span> Get live publishable key (pk_live_xxx)</div>
+        <div class="sub-item"><span class="dot gray"></span> Get live secret key (sk_live_xxx)</div>
+        <div class="sub-item"><span class="dot gray"></span> Configure webhook: <code>https://palm.ngrok.app/stripe/webhook</code></div>
+        <div class="sub-item"><span class="dot gray"></span> Save webhook signing secret (whsec_xxx)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase B: Licensing & Compliance -->
+  <div class="phase">
+    <h2>🔒 Phase B — Licensing & Compliance <span class="badge">2-6 weeks</span></h2>
+    <div class="checklist" id="phaseB">
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Create ALECS Account (Texas OCCC Portal)</div>
+          <div class="desc">ALECS = Automated Licensing and Electronic filing System — occc.texas.gov/alecs</div>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Engage Fintech Attorney</div>
+          <div class="desc">Recommended: Hudson Cook (hudsoncook.com) — consumer financial services specialists. Budget $3k-$8k for licensing prep.</div>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Prepare Compliance Business Plan</div>
+          <div class="desc">Required by OCCC — includes underwriting methodology, compliance program, collections policy</div>
+          <a class="link" href="COMPLIANCE_BUSINESS_PLAN.md">📄 Draft ready in launch/ folder</a>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Draft Proposed Loan Contract (Plain Language)</div>
+          <div class="desc">Must comply with TAC Chapter 90 — clear, simple English, no legal jargon</div>
+          <a class="link" href="LOAN_CONTRACT.md">📄 Draft ready in launch/ folder</a>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Secure Surety Bond</div>
+          <div class="desc">$25k-$100k bond — required by OCCC. Shop at suretybonds.com. ~$250-$500/yr</div>
+          <a class="link" href="SURETY_BOND_GUIDE.md">📄 Guide in launch/ folder</a>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Submit Texas OCCC License Application</div>
+          <div class="desc">File through ALECS — includes application fee ($1,000), bond, business plan, credit check, loan contract</div>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="sub-items">
+        <div class="sub-item"><span class="dot gray"></span> Pay $1,000 application fee</div>
+        <div class="sub-item"><span class="dot gray"></span> Upload compliance business plan</div>
+        <div class="sub-item"><span class="dot gray"></span> Upload proposed loan contract</div>
+        <div class="sub-item"><span class="dot gray"></span> Upload surety bond</div>
+        <div class="sub-item"><span class="dot gray"></span> Submit principal background + credit check</div>
+        <div class="sub-item"><span class="dot gray"></span> Wait for OCCC review (4-6 weeks)</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Parallel: Partner with Licensed Lender</div>
+          <div class="desc">Send outreach to 10+ target lenders — operating as service provider is faster than own license</div>
+          <a class="link" href="LENDER_PARTNERSHIP_OUTREACH.md">📄 Outreach template + target list</a>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Adopt Compliance Manual</div>
+          <div class="desc">Living document covering all regulatory procedures — review with attorney</div>
+          <a class="link" href="COMPLIANCE_MANUAL_OUTLINE.md">📄 Outline in launch/ folder</a>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase C: Platform Configuration -->
+  <div class="phase">
+    <h2>⚙️ Phase C — Platform Configuration <span class="badge">1-2 weeks</span></h2>
+    <div class="checklist" id="phaseC">
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Configure Live Stripe Keys on Platform</div>
+          <div class="desc">Go to /admin/settings → paste pk_live_xxx, sk_live_xxx, webhook secret → click Apply</div>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Set Up KYC (Stripe Identity)</div>
+          <div class="desc">Already integrated — go to /admin/settings → set KYC provider to 'stripe-identity'</div>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Configure Email (SendGrid)</div>
+          <div class="desc">Go to /admin/settings → paste SendGrid API key, set from address → Apply</div>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Set Up Custom Domain + HTTPS</div>
+          <div class="desc">Buy domain (palmfi.com), point DNS, Nginx + Let's Encrypt or Cloudflare Tunnel</div>
+          <a class="link" href="DOMAIN_SETUP.md">📄 Guide in launch/ folder</a>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Run Full E2E Test with Live Credentials</div>
+          <div class="desc">Test complete flow: register → apply → score → KYC → fund → make payment</div>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase D: Capital & First Loans -->
+  <div class="phase">
+    <h2>💰 Phase D — Capital & First Loans <span class="badge">2-4 weeks</span></h2>
+    <div class="checklist" id="phaseD">
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Deposit Loan Capital into Mercury</div>
+          <div class="desc">Transfer $15,000–$25,000 from personal account to PalmFi LLC business account</div>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Find Pilot Borrowers (5-10 people)</div>
+          <div class="desc">Friends, family, network — explain it's a real loan with real terms</div>
+          <a class="link" href="PILOT_LOANS_GUIDE.md">📄 Guide in launch/ folder</a>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Fund First Loan End-to-End</div>
+          <div class="desc">Borrower registers → applies → IDs → approved → funded → first payment collected</div>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Track Loans in Portfolio Tracker</div>
+          <div class="desc">Log every loan in the CSV — amount, APR, tier, payment history, status</div>
+          <a class="link" href="PILOT_PORTFOLIO_TRACKER.csv">📊 CSV in launch/ folder</a>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Raise Debt Facility from Investor</div>
+          <div class="desc">Use pitch deck + 10-loan portfolio data to raise $100k-$250k facility</div>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resources & Notes -->
+  <div class="notes">
+    <h3>📁 Launch Docs (in launch/ folder)</h3>
+    <ul>
+      <li><strong>README.html</strong> — Interactive checklist (this page)</li>
+      <li><strong>OPERATING_AGREEMENT.md</strong> — LLC operating agreement template</li>
+      <li><strong>COMPLIANCE_BUSINESS_PLAN.md</strong> — OCCC license application business plan</li>
+      <li><strong>LOAN_CONTRACT.md</strong> — Plain-language loan contract (TAC Ch 90 compliant)</li>
+      <li><strong>PITCH_DECK_OUTLINE.md</strong> — 14-slide investor deck content</li>
+      <li><strong>PalmFi_Pitch_Deck.pptx</strong> — Actual presentation file (49KB)</li>
+      <li><strong>PRIVATE_PLACEMENT_MEMO.md</strong> — Fundraising memo draft</li>
+      <li><strong>PILOT_LOANS_GUIDE.md</strong> — First 10 loans operations guide + budget</li>
+      <li><strong>PILOT_PORTFOLIO_TRACKER.csv</strong> — Spreadsheet to log every loan</li>
+      <li><strong>PORTFOLIO_SUMMARY.md</strong> — Summary table for investor presentations</li>
+      <li><strong>DOMAIN_SETUP.md</strong> — Nginx, SSL, Cloudflare Tunnel guide</li>
+      <li><strong>TEXAS_LICENSING_RESEARCH.md</strong> — Detailed licensing requirements</li>
+      <li><strong>SURETY_BOND_GUIDE.md</strong> — Where to buy bond, pricing, process</li>
+      <li><strong>KYC_VENDOR_EVAL.md</strong> — Stripe Identity vs Persona vs Onfido</li>
+      <li><strong>LENDER_PARTNERSHIP_OUTREACH.md</strong> — Target list + email template</li>
+      <li><strong>COMPLIANCE_MANUAL_OUTLINE.md</strong> — 10-chapter compliance manual outline</li>
+    </ul>
+    <h3 style="margin-top:16px;">📧 Email Templates (launch/email_templates/)</h3>
+    <ul>
+      <li>welcome.html, approved.html, payment_reminder.html</li>
+      <li>payment_received.html, collection_notice.html, rate_improvement.html</li>
+    </ul>
+    <h3 style="margin-top:16px;">📌 Key Links</h3>
+    <ul>
+      <li><strong>Delaware LLC:</strong> corp.delaware.gov ($90, online)</li>
+      <li><strong>EIN:</strong> irs.gov/ein (free, instant)</li>
+      <li><strong>Mercury Bank:</strong> mercury.com (fintech-friendly)</li>
+      <li><strong>Stripe:</strong> dashboard.stripe.com/register</li>
+      <li><strong>Texas OCCC:</strong> occc.texas.gov</li>
+      <li><strong>ALECS Portal:</strong> occc.texas.gov/alecs</li>
+      <li><strong>NMLS:</strong> nmls.org (multi-state licensing)</li>
+      <li><strong>Hudson Cook (attorney):</strong> hudsoncook.com</li>
+      <li><strong>Surety Bonds:</strong> suretybonds.com</li>
+    </ul>
+    <h3 style="margin-top:16px;">⚠️ Critical Notes</h3>
+    <ul>
+      <li><strong>Do NOT lend to strangers without a license.</strong> Friends/family under limited exemptions only until licensed</li>
+      <li>Your ML model AUC 0.756 is your competitive moat — lead with it in every pitch</li>
+      <li>Run the licensed lender partnership track in PARALLEL with your own license application</li>
+      <li>Save all receipts — LLC formation, EIN, bank, Stripe fees — all deductible</li>
+      <li>Once you have your license, the first 10 loans are about proving loss curves, not profit</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+// Counter auto-update
+function count() {
+  const items = document.querySelectorAll('.item');
+  const total = items.length;
+  const done = document.querySelectorAll('.item.done').length;
+  const running = document.querySelectorAll('.item.running').length;
+  document.getElementById('total').textContent = total;
+  document.getElementById('done').textContent = done;
+  document.getElementById('running').textContent = running;
+  document.getElementById('remaining').textContent = total - done - running;
+}
+// Click to toggle
+document.querySelectorAll('.item .checkbox').forEach((cb, i) => {
+  cb.parentElement.addEventListener('click', function(e) {
+    if (e.target.closest('a')) return;
+    this.classList.toggle('done');
+    this.classList.remove('running');
+    const badge = this.querySelector('.status-badge');
+    badge.textContent = this.classList.contains('done') ? '✓ Done' : 'Pending';
+    badge.className = 'status-badge';
+    if (this.classList.contains('done')) badge.classList.add('status-badge', 'done');
+    count();
+  });
+});
+count();
+</script>
+</body>
+</html>

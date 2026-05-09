@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Auto-Pay Setup - PalmFi</title>
+<script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#1a365d',accent:'#2b6cb0',gold:'#d4a017'}}}}</script></head>
+<body class="bg-gray-50 font-sans">
+<nav class="bg-primary text-white px-6 py-4 flex justify-between items-center shadow-lg">
+  <a href="/dashboard" class="text-xl font-bold"><i class="fas fa-leaf mr-2"></i>PalmFi</a>
+  <div class="flex items-center space-x-4">
+    <a href="/dashboard" class="text-sm hover:text-gold transition"><i class="fas fa-chart-pie mr-1"></i>Dashboard</a>
+    <a href="/payments" class="text-sm hover:text-gold transition"><i class="fas fa-credit-card mr-1"></i>Payments</a>
+    <a href="/logout" class="bg-red-600 px-3 py-1.5 rounded-lg text-sm hover:bg-red-700 transition">Logout</a>
+  </div>
+</nav>
+<div class="max-w-lg mx-auto px-4 py-16">
+  <div class="bg-white rounded-2xl shadow-lg p-8 text-center">
+    {% if success %}
+    <div class="text-green-500 text-5xl mb-4"><i class="fas fa-check-circle"></i></div>
+    <h1 class="text-2xl font-bold text-primary mb-2">Auto-Pay Enabled!</h1>
+    <p class="text-gray-600 mb-2">Your automatic monthly payments are now set up.</p>
+    <p class="text-sm text-gray-400 mb-6">We'll charge your {{ card_brand|capitalize }} **** {{ card_last4 }} each month for your loan payment.</p>
+    {% else %}
+    <div class="text-red-500 text-5xl mb-4"><i class="fas fa-exclamation-circle"></i></div>
+    <h1 class="text-2xl font-bold text-primary mb-2">Auto-Pay Disabled</h1>
+    <p class="text-gray-600 mb-6">Automatic payments have been turned off for this loan.</p>
+    {% endif %}
+    <div class="flex justify-center space-x-4">
+      <a href="/payments" class="bg-accent text-white px-6 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition"><i class="fas fa-arrow-left mr-1"></i>Back to Payments</a>
+      <a href="/dashboard" class="border border-gray-300 text-gray-700 px-6 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition">Dashboard</a>
+    </div>
+  </div>
+</div>
+</body></html>

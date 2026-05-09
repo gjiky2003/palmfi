@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Borrowers - PalmFi Admin</title>
+<script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#1a365d',accent:'#059669',gold:'#d4a017'}}}}</script>
+<style>
+.borrower-row { transition: all 0.15s ease; cursor: pointer; }
+.borrower-row:hover { background-color: #f9fafb; }
+.borrower-detail { display: none; }
+.borrower-detail.open { display: block; }
+</style></head>
+<body class="bg-gray-50 font-sans antialiased">
+
+<nav class="bg-primary text-white px-6 py-3 flex justify-between items-center shadow-lg sticky top-0 z-50">
+  <div class="flex items-center space-x-3">
+    <div class="w-9 h-9 bg-accent rounded-lg flex items-center justify-center"><i class="fas fa-shield-alt text-white text-lg"></i></div>
+    <h1 class="text-xl font-bold tracking-tight">PalmFi <span class="text-accent font-light">Admin</span></h1>
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-sm text-gray-300">Borrowers</span>
+  </div>
+  <div class="flex items-center space-x-4">
+    <a href="/admin/dashboard" class="text-sm text-gray-300 hover:text-white transition"><i class="fas fa-tachometer-alt mr-1"></i>Dashboard</a>
+    <a href="/admin/portfolio" class="text-sm text-gray-300 hover:text-white transition"><i class="fas fa-chart-pie mr-1"></i>Portfolio</a>
+    <a href="/admin/applications" class="text-sm text-gray-300 hover:text-white transition"><i class="fas fa-file-alt mr-1"></i>Apps</a>
+    <a href="/admin/logout" class="bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded-lg text-sm transition"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
+  </div>
+</nav>
+
+<div class="max-w-7xl mx-auto px-4 py-6">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for cat, msg in messages %}
+      <div class="mb-4 p-3 rounded-lg text-sm {{ 'bg-green-100 text-green-800' if cat=='success' else 'bg-red-100 text-red-800' if cat=='error' else 'bg-blue-100 text-blue-800' }}">
+        <i class="fas {{ 'fa-check-circle' if cat=='success' else 'fa-exclamation-circle' }} mr-2"></i>{{ msg }}</div>
+    {% endfor %}{% endif %}
+  {% endwith %}
+
+  <!-- Page Header -->
+  <div class="flex flex-wrap items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-primary"><i class="fas fa-users text-accent mr-2"></i>Borrower Management</h1>
+      <p class="text-sm text-gray-500">{{ borrowers|length }} borrowers</p>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="bg-white rounded-2xl shadow-sm p-4 mb-6">
+    <form method="GET" action="/admin/borrowers" class="flex items-center">
+      <div class="relative flex-1">
+        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        <input type="text" name="search" value="{{ search }}" placeholder="Search by name, email, or phone..."
+          class="w-full pl-10 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent">
+      </div>
+      <button type="submit" class="ml-2 bg-primary text-white px-5 py-2.5 rounded-lg text-sm hover:bg-blue-900 transition"><i class="fas fa-search mr-1"></i>Search</button>
+      {% if search %}
+      <a href="/admin/borrowers" class="ml-2 text-gray-400 text-sm hover:text-gray-600"><i class="fas fa-times mr-1"></i>Clear</a>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- Borrowers Table -->
+  <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="text-gray-500 text-xs uppercase tracking-wider bg-gray-50">
+          <th class="p-3 text-left font-medium">Name</th>
+          <th class="p-3 text-left font-medium">Email</th>
+          <th class="p-3 text-left font-medium">Phone</th>
+          <th class="p-3 text-right font-medium">Loans</th>
+          <th class="p-3 text-right font-medium">Total Borrowed</th>
+          <th class="p-3 text-center font-medium">Status</th>
+          <th class="p-3 text-left font-medium">Created</th>
+        </tr></thead>
+        <tbody>
+          {% for b in borrowers %}
+          <tr class="borrower-row border-b border-gray-100" data-id="{{ b.id }}">
+            <td class="p-3">
+              <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 bg-accent rounded-full flex items-center justify-center text-white text-xs font-bold">{{ b.first_name[:1] }}{{ b.last_name[:1] }}</div>
+                <div>
+                  <div class="font-medium text-primary">{{ b.first_name }} {{ b.last_name }}</div>
+                  <div class="text-xs text-gray-400">ID #{{ b.id }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="p-3 text-gray-600">{{ b.email }}</td>
+            <td class="p-3 text-gray-500">{{ b.phone or '-' }}</td>
+            <td class="p-3 text-right font-medium">{{ b.loans_count }}</td>
+            <td class="p-3 text-right font-medium">${{ "{:,.0f}".format(b.total_borrowed) }}</td>
+            <td class="p-3 text-center">
+              {% set ls = b.last_status or 'none' %}
+              <span class="text-xs px-2 py-0.5 rounded-full font-medium
+                {% if ls == 'submitted' %}bg-amber-100 text-amber-700
+                {% elif ls == 'approved' %}bg-green-100 text-green-700
+                {% elif ls == 'declined' %}bg-red-100 text-red-700
+                {% elif ls == 'funded' %}bg-blue-100 text-blue-700
+                {% else %}bg-gray-100 text-gray-600{% endif %}">
+                {{ ls|title }}
+              </span>
+            </td>
+            <td class="p-3 text-xs text-gray-500">{{ b.created_at[:10] }}</td>
+          </tr>
+          <!-- Expandable Borrower Detail -->
+          <tr class="borrower-detail" data-detail="{{ b.id }}">
+            <td colspan="7" class="p-0">
+              <div class="bg-gray-50 p-5 border-b border-gray-200">
+                <div class="grid md:grid-cols-3 gap-6 text-sm">
+                  <!-- Personal Info -->
+                  <div>
+                    <h4 class="text-xs text-gray-500 uppercase tracking-wider font-medium mb-3 border-b pb-1">Personal Information</h4>
+                    <p class="mb-1"><span class="text-gray-400">DOB:</span> {{ b.date_of_birth or 'N/A' }}</p>
+                    <p class="mb-1"><span class="text-gray-400">SSN (last 4):</span> {{ b.ssn_last4 or 'N/A' }}</p>
+                    <p class="mb-1"><span class="text-gray-400">Address:</span> {{ b.address or '' }}, {{ b.city or '' }}, {{ b.state or '' }}</p>
+                    <p class="mb-1"><span class="text-gray-400">Phone:</span> {{ b.phone or 'N/A' }}</p>
+                  </div>
+                  <!-- Employment & Finance -->
+                  <div>
+                    <h4 class="text-xs text-gray-500 uppercase tracking-wider font-medium mb-3 border-b pb-1">Employment &amp; Finance</h4>
+                    <p class="mb-1"><span class="text-gray-400">Employer:</span> {{ b.employer_name or 'N/A' }}</p>
+                    <p class="mb-1"><span class="text-gray-400">Status:</span> {{ b.employment_status|replace('_', ' ')|title or 'N/A' }}</p>
+                    <p class="mb-1"><span class="text-gray-400">Annual Income:</span> ${{ "{:,.0f}".format(b.annual_income) if b.annual_income else 'N/A' }}</p>
+                    <p class="mb-1"><span class="text-gray-400">Credit Score:</span> {{ b.credit_score or 'N/A' }}</p>
+                    <p class="mb-1"><span class="text-gray-400">Home:</span> {{ b.home_ownership|replace('_', ' ')|title or 'N/A' }}</p>
+                  </div>
+                  <!-- Account Info -->
+                  <div>
+                    <h4 class="text-xs text-gray-500 uppercase tracking-wider font-medium mb-3 border-b pb-1">Account</h4>
+                    <p class="mb-1"><span class="text-gray-400">Email:</span> {{ b.email }}</p>
+                    <p class="mb-1"><span class="text-gray-400">KYC Status:</span>
+                      <span class="text-xs px-2 py-0.5 rounded-full
+                        {% if b.kyc_status == 'verified' %}bg-green-100 text-green-700
+                        {% elif b.kyc_status == 'pending' %}bg-yellow-100 text-yellow-700
+                        {% else %}bg-red-100 text-red-700{% endif %}">
+                        {{ b.kyc_status|title }}
+                      </span>
+                    </p>
+                    <p class="mb-1"><span class="text-gray-400">Created:</span> {{ b.created_at }}</p>
+                    <p class="mb-1"><span class="text-gray-400">Loans:</span> {{ b.loans_count }} (Total: ${{ "{:,.0f}".format(b.total_borrowed) }})</p>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="p-10 text-center text-gray-400">
+            <i class="fas fa-users text-gray-300 text-3xl mb-3 block"></i>
+            {% if search %}No borrowers found matching "{{ search }}"{% else %}No borrowers yet{% endif %}
+          </td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// Toggle expandable borrower details
+document.querySelectorAll('.borrower-row').forEach(row => {
+  row.addEventListener('click', function() {
+    const id = this.dataset.id;
+    const detail = document.querySelector(`.borrower-detail[data-detail="${id}"]`);
+    if (detail) {
+      detail.classList.toggle('open');
+      this.classList.toggle('expanded');
+    }
+  });
+});
+</script>
+
+</body></html>

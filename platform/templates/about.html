@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>About - PalmFi</title>
+<script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#1a365d',accent:'#2b6cb0',gold:'#d4a017'}}}}</script></head>
+<body class="bg-gray-50 font-sans">
+<nav class="bg-primary text-white px-6 py-4 flex justify-between items-center shadow-lg">
+  <a href="/" class="text-xl font-bold"><i class="fas fa-leaf mr-2"></i>PalmFi</a>
+  <div class="flex items-center space-x-4">
+    <a href="/about" class="text-sm hover:text-gold transition">About</a>
+    <a href="/terms" class="text-sm hover:text-gold transition">Terms</a>
+    <a href="/login" class="bg-accent px-4 py-1.5 rounded-lg text-sm hover:bg-blue-700 transition">Sign In</a>
+  </div>
+</nav>
+<div class="max-w-4xl mx-auto px-4 py-12">
+  <h1 class="text-3xl font-bold text-primary mb-6">About PalmFi</h1>
+  <div class="bg-white rounded-2xl shadow-lg p-8 space-y-6">
+    <p class="text-gray-600">PalmFi is an AI-native lending platform designed to provide fair, transparent, and instant personal loans. Our underwriting engine analyzes your financial profile in real-time, delivering risk-based pricing with zero human bias.</p>
+    <h2 class="text-xl font-semibold text-primary mt-6">How It Works</h2>
+    <div class="grid md:grid-cols-3 gap-6 mt-4">
+      <div class="text-center p-4"><div class="w-12 h-12 bg-accent text-white rounded-full flex items-center justify-center mx-auto mb-3"><i class="fas fa-file-alt"></i></div><h3 class="font-semibold">1. Apply</h3><p class="text-sm text-gray-500">Complete our quick 4-step application. No paperwork.</p></div>
+      <div class="text-center p-4"><div class="w-12 h-12 bg-accent text-white rounded-full flex items-center justify-center mx-auto mb-3"><i class="fas fa-microchip"></i></div><h3 class="font-semibold">2. AI Analysis</h3><p class="text-sm text-gray-500">Our ML engine scores your application using 18+ financial factors.</p></div>
+      <div class="text-center p-4"><div class="w-12 h-12 bg-accent text-white rounded-full flex items-center justify-center mx-auto mb-3"><i class="fas fa-hand-holding-usd"></i></div><h3 class="font-semibold">3. Get Funded</h3><p class="text-sm text-gray-500">Accept your offer and receive funds within 24 hours.</p></div>
+    </div>
+    <h2 class="text-xl font-semibold text-primary mt-6">Why PalmFi?</h2>
+    <ul class="space-y-3 text-gray-600">
+      <li><i class="fas fa-robot text-accent mr-2"></i><strong>AI-Driven:</strong> Ensemble machine learning (AUC 0.756) — accurate, fair, consistent</li>
+      <li><i class="fas fa-bolt text-accent mr-2"></i><strong>Instant Decisions:</strong> Application scored in milliseconds, not days</li>
+      <li><i class="fas fa-shield-alt text-accent mr-2"></i><strong>Transparent:</strong> Full explanation of your risk score and pricing factors</li>
+      <li><i class="fas fa-mobile-alt text-accent mr-2"></i><strong>Mobile-First:</strong> Manage your loan entirely from your phone</li>
+    </ul>
+  </div>
+</div>
+</body></html>

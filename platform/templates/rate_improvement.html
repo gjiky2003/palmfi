@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Rate Improvement - PalmFi</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#1a365d',accent:'#059669',gold:'#d4a017'}}}}</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-sans">
+<nav class="bg-primary text-white px-6 py-4 flex justify-between items-center shadow-lg">
+  <a href="/dashboard" class="text-xl font-bold"><i class="fas fa-leaf mr-2"></i>PalmFi</a>
+  <div class="flex items-center space-x-4">
+    <a href="/dashboard" class="text-sm hover:text-gold transition"><i class="fas fa-chart-pie mr-1"></i>Dashboard</a>
+    <a href="/logout" class="bg-red-600 px-3 py-1.5 rounded-lg text-sm hover:bg-red-700 transition">Logout</a>
+  </div>
+</nav>
+<div class="max-w-4xl mx-auto px-4 py-8">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for cat, msg in messages %}
+      <div class="mb-4 p-3 rounded-lg text-sm {{ 'bg-green-100 text-green-800' if cat=='success' else 'bg-red-100 text-red-800' if cat=='error' else 'bg-blue-100 text-blue-800' }}">{{ msg }}</div>
+    {% endfor %}{% endif %}
+  {% endwith %}
+
+  <div class="text-center mb-8">
+    <h1 class="text-3xl font-bold text-primary"><i class="fas fa-arrow-trend-up mr-2"></i>Rate Improvement</h1>
+    <p class="text-gray-500 mt-2">Every 6 on-time payments = 0.5% APR reduction. Max {{ status.max_possible_reduction }}% off.</p>
+  </div>
+
+  <!-- Current Rate Card -->
+  <div class="bg-white rounded-2xl shadow-lg p-8 mb-6 text-center">
+    <div class="inline-flex items-center justify-center w-24 h-24 rounded-full 
+      {% if status.steps_completed >= status.steps_remaining and status.steps_remaining > 0 %}bg-green-100
+      {% elif status.consecutive_on_time >= 3 %}bg-blue-100
+      {% else %}bg-gray-100{% endif %} mb-4">
+      <i class="fas fa-percentage text-3xl {% if status.steps_completed > 0 %}text-accent{% else %}text-gray-400{% endif %}"></i>
+    </div>
+    <div class="text-5xl font-bold text-primary mb-2">{{ status.current_rate }}%</div>
+    <div class="text-gray-500 text-sm">Current APR</div>
+
+    <div class="flex justify-center space-x-8 mt-6">
+      <div class="text-center">
+        <div class="text-2xl font-bold text-gray-700">{{ "%.2f"|format(status.original_rate) }}%</div>
+        <div class="text-xs text-gray-400">Original APR</div>
+      </div>
+      <div class="text-center">
+        <div class="text-2xl font-bold text-accent">{{ "%.2f"|format(status.total_reduction) }}%</div>
+        <div class="text-xs text-gray-400">Total Reduced</div>
+      </div>
+      <div class="text-center">
+        <div class="text-2xl font-bold text-gold">{{ "%.2f"|format(status.max_possible_reduction - status.total_reduction) }}%</div>
+        <div class="text-xs text-gray-400">Potential Left</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress to Next Drop -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+    <h2 class="font-semibold text-gray-700 mb-4"><i class="fas fa-fire text-orange-500 mr-2"></i>Payment Streak</h2>
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-sm font-medium">{{ status.payment_streak_label }}</span>
+      <span class="text-sm text-gray-500">{{ status.consecutive_on_time }} consecutive on-time payments</span>
+    </div>
+    <div class="w-full bg-gray-200 rounded-full h-3 mb-1">
+      <div class="bg-gradient-to-r from-orange-400 to-accent h-3 rounded-full transition-all" 
+           style="width: {{ (status.consecutive_on_time % status.payments_per_step) / status.payments_per_step * 100 if status.consecutive_on_time % status.payments_per_step > 0 else 0 }}%"></div>
+    </div>
+    <div class="flex justify-between text-xs text-gray-400">
+      <span>Next drop in {{ status.next_drop_at }} payments</span>
+      <span>{{ status.payments_per_step }} payments = 0.5% drop</span>
+    </div>
+    <div class="flex justify-center mt-4 space-x-2">
+      {% for i in range(status.steps_completed) %}
+        <div class="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold" title="Step {{ i+1 }} done">&#10003;</div>
+      {% endfor %}
+      {% for i in range(status.steps_remaining) %}
+        <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-xs font-bold">{{ status.steps_completed + i + 1 }}</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Recent Payment History -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+    <h2 class="font-semibold text-gray-700 mb-4"><i class="fas fa-history mr-2"></i>Payment History</h2>
+    {% if payments %}
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="text-gray-500 text-xs uppercase border-b">
+          <th class="p-2 text-left">Date</th>
+          <th class="p-2 text-right">Amount</th>
+          <th class="p-2 text-center">Status</th>
+        </tr></thead>
+        <tbody>
+          {% for p in payments %}
+          <tr class="border-t hover:bg-gray-50">
+            <td class="p-2">{{ p.paid_at or p.created_at }}</td>
+            <td class="p-2 text-right font-medium">${{ "%.2f"|format(p.amount_cents/100) }}</td>
+            <td class="p-2 text-center">
+              <span class="text-xs px-2 py-0.5 rounded-full 
+                {{ 'bg-green-100 text-green-700' if p.status == 'completed' else 'bg-yellow-100 text-yellow-700' if p.status == 'pending' else 'bg-red-100 text-red-700' }}">
+                {{ p.status|capitalize }}
+              </span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="text-gray-400 text-center py-6"><i class="fas fa-inbox mr-2"></i>No payments yet. Start your streak!</p>
+    {% endif %}
+  </div>
+
+  <!-- How It Works -->
+  <div class="bg-gradient-to-br from-primary to-blue-900 text-white rounded-2xl shadow-lg p-6">
+    <h2 class="font-semibold mb-3"><i class="fas fa-lightbulb mr-2"></i>How It Works</h2>
+    <div class="grid md:grid-cols-3 gap-4 text-sm">
+      <div class="bg-white/10 rounded-xl p-4">
+        <div class="text-xl font-bold mb-1">1</div>
+        <p>Make on-time payments every month. Each on-time payment counts toward your streak.</p>
+      </div>
+      <div class="bg-white/10 rounded-xl p-4">
+        <div class="text-xl font-bold mb-1">2</div>
+        <p>After every 6 consecutive on-time payments, your APR drops by <strong>0.5%</strong> automatically.</p>
+      </div>
+      <div class="bg-white/10 rounded-xl p-4">
+        <div class="text-xl font-bold mb-1">3</div>
+        <p>Maximum reduction: <strong>{{ status.max_possible_reduction }}%</strong>. One missed payment resets the streak.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mt-6">
+    <a href="/dashboard" class="text-accent text-sm hover:underline"><i class="fas fa-arrow-left mr-1"></i>Back to Dashboard</a>
+  </div>
+</div>
+</body></html>

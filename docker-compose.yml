@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  lumifi:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - FLASK_PORT=8080
+      - FLASK_HOST=0.0.0.0
+      - SECRET_KEY=ai-lending-secret-key-change-in-production
+      - JWT_SECRET=jwt-secret-change-in-production
+      - ADMIN_EMAIL=admin@ailending.com
+      - ADMIN_PASSWORD=admin123
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET:-}
+    volumes:
+      - ./platform:/app/platform
+      - ./underwriting:/app/underwriting
+      - ./automation:/app/automation
+      - ./platform/lending.db:/app/platform/lending.db
+    restart: unless-stopped

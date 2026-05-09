@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Income-Share - PalmFi</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#1a365d',accent:'#059669',gold:'#d4a017'}}}}</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-sans">
+<nav class="bg-primary text-white px-6 py-4 flex justify-between items-center shadow-lg">
+  <a href="/dashboard" class="text-xl font-bold"><i class="fas fa-leaf mr-2"></i>PalmFi</a>
+  <div class="flex items-center space-x-4">
+    <a href="/dashboard" class="text-sm hover:text-gold transition"><i class="fas fa-chart-pie mr-1"></i>Dashboard</a>
+    <a href="/logout" class="bg-red-600 px-3 py-1.5 rounded-lg text-sm hover:bg-red-700 transition">Logout</a>
+  </div>
+</nav>
+<div class="max-w-4xl mx-auto px-4 py-8">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for cat, msg in messages %}
+      <div class="mb-4 p-3 rounded-lg text-sm {{ 'bg-green-100 text-green-800' if cat=='success' else 'bg-red-100 text-red-800' if cat=='error' else 'bg-blue-100 text-blue-800' }}">{{ msg }}</div>
+    {% endfor %}{% endif %}
+  {% endwith %}
+
+  <div class="text-center mb-8">
+    <h1 class="text-3xl font-bold text-primary"><i class="fas fa-chart-line mr-2"></i>Income-Share Loan</h1>
+    <p class="text-gray-500 mt-2">Pay a percentage of your income, not a fixed amount. Flexible when you need it.</p>
+  </div>
+
+  <!-- Status Card -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-semibold text-gray-700">Loan Status</h2>
+      {% if niche and niche.income_share_active %}
+        <span class="bg-accent text-white text-xs px-3 py-1 rounded-full font-medium"><i class="fas fa-check mr-1"></i>Income-Share Active</span>
+      {% else %}
+        <span class="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full font-medium">Standard Payments</span>
+      {% endif %}
+    </div>
+    <div class="grid grid-cols-3 gap-4 text-center">
+      <div>
+        <div class="text-xs text-gray-500">Loan Balance</div>
+        <div class="text-xl font-bold text-primary">${{ "{:,.0f}".format(loan.remaining_balance) }}</div>
+      </div>
+      <div>
+        <div class="text-xs text-gray-500">Standard Payment</div>
+        <div class="text-xl font-bold text-gray-700">${{ "{:.2f}".format(loan.monthly_payment) }}</div>
+      </div>
+      <div>
+        <div class="text-xs text-gray-500">Your APR</div>
+        <div class="text-xl font-bold text-accent">{{ "{:.2f}%".format(loan.interest_rate) }}</div>
+      </div>
+    </div>
+  </div>
+
+  {% if not niche or not niche.income_share_active %}
+  <!-- Activate Income-Share -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+    <h2 class="font-semibold text-gray-700 mb-4"><i class="fas fa-toggle-on text-accent mr-2"></i>Try Income-Share Mode</h2>
+    <p class="text-sm text-gray-500 mb-4">Enter your current monthly income to see how much you'd pay under income-share.</p>
+    
+    <form method="POST" action="/income-share" class="space-y-4">
+      <input type="hidden" name="action" value="calculate">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Your Monthly Income (after tax)</label>
+        <div class="relative">
+          <span class="absolute left-3 top-2.5 text-gray-400">$</span>
+          <input type="number" name="monthly_income" step="100" min="500" placeholder="e.g. 3500" required
+                 class="w-full pl-8 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-accent focus:outline-none">
+        </div>
+      </div>
+      {% if result %}
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <span class="text-gray-500">Income-share payment:</span>
+            <span class="font-bold text-accent text-lg block">${{ "%.2f"|format(result.income_share_payment) }}</span>
+          </div>
+          <div>
+            <span class="text-gray-500">Standard payment:</span>
+            <span class="font-bold text-gray-700 text-lg block">${{ "%.2f"|format(result.standard_payment) }}</span>
+          </div>
+          <div>
+            <span class="text-gray-500">Share %:</span>
+            <span class="font-bold block">{{ "%.1f"|format(result.share_pct) }}%</span>
+          </div>
+          <div>
+            <span class="text-gray-500">Savings this month:</span>
+            <span class="font-bold block {{ 'text-green-600' if result.savings_this_month > 0 else 'text-red-600' }}">
+              ${{ "%.2f"|format(result.savings_this_month) }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="flex space-x-3">
+        <button type="submit" class="bg-accent text-white px-6 py-2 rounded-lg text-sm hover:bg-emerald-700 transition"><i class="fas fa-calculator mr-1"></i>Recalculate</button>
+        <button type="submit" formaction="/income-share" formmethod="POST" name="action" value="toggle_on" 
+                class="bg-primary text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-800 transition">
+          <i class="fas fa-check mr-1"></i>Activate Income-Share
+        </button>
+      </div>
+      {% else %}
+      <button type="submit" class="bg-accent text-white px-6 py-2 rounded-lg text-sm hover:bg-emerald-700 transition"><i class="fas fa-calculator mr-1"></i>Calculate My Payment</button>
+      {% endif %}
+    </form>
+  </div>
+  {% else %}
+  <!-- Income-Share Active: Deactivate or Report Income -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+    <h2 class="font-semibold text-gray-700 mb-4"><i class="fas fa-chart-line text-accent mr-2"></i>Income-Share Active</h2>
+    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+      <p class="text-sm text-green-800"><i class="fas fa-check-circle mr-1"></i> Your next payment will be based on your reported income.</p>
+      {% if niche and niche.last_reported_income %}
+      <p class="text-xs text-green-600 mt-1">Last reported income: <strong>${{ "%.0f"|format(niche.last_reported_income) }}/mo</strong></p>
+      {% endif %}
+    </div>
+
+    <form method="POST" action="/income-share" class="space-y-3">
+      <input type="hidden" name="action" value="calculate">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Update Monthly Income</label>
+        <div class="relative">
+          <span class="absolute left-3 top-2.5 text-gray-400">$</span>
+          <input type="number" name="monthly_income" step="100" min="500" placeholder="e.g. {{ '%.0f'|format(niche.last_reported_income) if niche and niche.last_reported_income else '3500' }}" required
+                 class="w-full pl-8 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-accent focus:outline-none">
+        </div>
+      </div>
+      <div class="flex space-x-3">
+        <button type="submit" class="bg-accent text-white px-4 py-2 rounded-lg text-sm hover:bg-emerald-700 transition">
+          <i class="fas fa-sync mr-1"></i>Update & Recalculate
+        </button>
+        <form method="POST" action="/income-share" style="display:inline">
+          <input type="hidden" name="action" value="toggle_off">
+          <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-700 transition">
+            <i class="fas fa-toggle-off mr-1"></i>Deactivate
+          </button>
+        </form>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+
+  <!-- How It Works -->
+  <div class="bg-gradient-to-br from-primary to-blue-900 text-white rounded-2xl shadow-lg p-6">
+    <h2 class="font-semibold mb-3"><i class="fas fa-lightbulb mr-2"></i>How Income-Share Works</h2>
+    <div class="grid md:grid-cols-3 gap-4 text-sm">
+      <div class="bg-white/10 rounded-xl p-4">
+        <div class="text-xl font-bold mb-1">Low income month</div>
+        <p>You pay less — a fixed % of your actual earnings. Never more than 150% of your standard payment.</p>
+      </div>
+      <div class="bg-white/10 rounded-xl p-4">
+        <div class="text-xl font-bold mb-1">High income month</div>
+        <p>You pay more (up to 150% of standard). The extra reduces your balance faster.</p>
+      </div>
+      <div class="bg-white/10 rounded-xl p-4">
+        <div class="text-xl font-bold mb-1">Risk tier matters</div>
+        <p>Better credit = lower share %. Tier A borrowers pay just 5% of income. Tier E pays 15%.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mt-6">
+    <a href="/dashboard" class="text-accent text-sm hover:underline"><i class="fas fa-arrow-left mr-1"></i>Back to Dashboard</a>
+  </div>
+</div>
+</body></html>

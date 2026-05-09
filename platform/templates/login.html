@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Sign In - PalmFi</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:"#1a365d",accent:"#059669"}}}}</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+<div class="min-h-screen flex items-center justify-center py-12 px-4">
+<div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
+<div class="text-center mb-8"><div class="text-5xl mb-4"><i class="fas fa-bolt text-accent"></i></div><h1 class="text-3xl font-bold text-primary">Welcome Back</h1></div>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}{% for cat,msg in messages %}
+<div class="p-4 rounded-lg text-sm font-medium {{ 'bg-green-100 text-green-800' if cat=='success' else 'bg-red-100 text-red-800' if cat=='error' else 'bg-yellow-100 text-yellow-800' }} mb-4">{{ msg }}</div>
+{% endfor %}{% endif %}{% endwith %}
+<form method="POST" class="space-y-4">
+<div><label class="block text-sm font-medium text-gray-700">Email</label><input type="email" name="email" required class="w-full mt-1 px-4 py-3 border rounded-xl"></div>
+<div><label class="block text-sm font-medium text-gray-700">Password</label><input type="password" name="password" required class="w-full mt-1 px-4 py-3 border rounded-xl"></div>
+<button type="submit" class="w-full bg-accent hover:bg-green-700 text-white py-4 rounded-xl font-semibold text-lg">Sign In</button>
+</form>
+<p class="text-center mt-6 text-gray-500">No account? <a href="/register" class="text-accent hover:underline">Create one</a></p>
+</div></div></body></html>

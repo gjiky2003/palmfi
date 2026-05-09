@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Settings - PalmFi Admin</title>
+<script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#1a365d',accent:'#059669',gold:'#d4a017'}}}}</script>
+<style>
+.section-card { transition: all 0.2s ease; }
+.section-card:hover { box-shadow: 0 8px 20px -5px rgba(0,0,0,0.25); }
+.btn-action { transition: all 0.15s ease; }
+.btn-action:hover { transform: translateY(-1px); }
+input:focus, select:focus { outline: none; box-shadow: 0 0 0 2px rgba(5,150,105,0.4); }
+</style></head>
+<body class="bg-slate-900 font-sans antialiased text-gray-100">
+
+<!-- Top Header Bar -->
+<nav class="bg-slate-800 text-white px-6 py-3 flex justify-between items-center shadow-lg sticky top-0 z-50 border-b border-slate-700">
+  <div class="flex items-center space-x-3">
+    <div class="w-9 h-9 bg-emerald-600 rounded-lg flex items-center justify-center"><i class="fas fa-shield-alt text-white text-lg"></i></div>
+    <h1 class="text-xl font-bold tracking-tight">PalmFi <span class="text-emerald-400 font-light">Admin</span></h1>
+    <span class="text-slate-500 mx-2">/</span>
+    <span class="text-sm text-slate-400">Settings</span>
+  </div>
+  <div class="flex items-center space-x-4">
+    <a href="/admin/dashboard" class="text-sm text-slate-300 hover:text-white transition"><i class="fas fa-tachometer-alt mr-1"></i>Dashboard</a>
+    <a href="/admin/portfolio" class="text-sm text-slate-300 hover:text-white transition"><i class="fas fa-chart-pie mr-1"></i>Portfolio</a>
+    <a href="/admin/applications" class="text-sm text-slate-300 hover:text-white transition"><i class="fas fa-file-alt mr-1"></i>Apps</a>
+    <a href="/admin/borrowers" class="text-sm text-slate-300 hover:text-white transition"><i class="fas fa-users mr-1"></i>Borrowers</a>
+    <a href="/admin/logout" class="bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded-lg text-sm transition"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
+  </div>
+</nav>
+
+<div class="max-w-5xl mx-auto px-4 py-6">
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for cat, msg in messages %}
+      <div class="mb-4 p-3 rounded-lg text-sm flex items-center
+        {% if cat=='success' %}bg-emerald-900/50 text-emerald-300 border border-emerald-700
+        {% elif cat=='warning' %}bg-amber-900/50 text-amber-300 border border-amber-700
+        {% elif cat=='error' %}bg-red-900/50 text-red-300 border border-red-700
+        {% else %}bg-slate-800 text-slate-300 border border-slate-600{% endif %}">
+        <i class="fas {{ 'fa-check-circle' if cat=='success' else 'fa-exclamation-triangle' if cat=='warning' else 'fa-exclamation-circle' if cat=='error' else 'fa-info-circle' }} mr-2"></i>{{ msg }}
+      </div>
+    {% endfor %}{% endif %}
+  {% endwith %}
+
+  <!-- Page Header -->
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-white"><i class="fas fa-cogs text-emerald-400 mr-2"></i>Settings</h1>
+    <p class="text-sm text-slate-400 mt-1">Configure platform credentials, providers, and domain settings</p>
+  </div>
+
+  <!-- Apply Status Bar -->
+  <div class="bg-slate-800 rounded-xl border border-slate-700 p-4 mb-6 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-lg flex items-center justify-center
+        {% if config.applied %}bg-emerald-900/50 text-emerald-400{% else %}bg-red-900/50 text-red-400{% endif %}">
+        <i class="fas {% if config.applied %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} text-lg"></i>
+      </div>
+      <div>
+        <div class="text-sm font-medium text-white">Configuration Status</div>
+        <div class="text-xs {% if config.applied %}text-emerald-400{% else %}text-red-400{% endif %}">
+          {% if config.applied %}
+            <i class="fas fa-check mr-1"></i>Last Applied: Yes — settings are active
+          {% else %}
+            <i class="fas fa-times mr-1"></i>Last Applied: No — pending changes not yet activated
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center space-x-2">
+      <span class="text-xs text-slate-500">
+        <i class="fas fa-sync-alt mr-1"></i>
+        {% if config.applied %}Applied{% else %}Changes pending{% endif %}
+      </span>
+      <span class="w-3 h-3 rounded-full {% if config.applied %}bg-emerald-500{% else %}bg-red-500{% endif %}"></span>
+    </div>
+  </div>
+
+  <div class="space-y-6">
+
+    <!-- ========== STRIPE SECTION ========== -->
+    <div class="section-card bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
+      <!-- Summary Bar -->
+      <div class="bg-slate-750 px-5 py-2.5 border-b border-slate-700 flex items-center justify-between text-xs">
+        <div class="flex items-center space-x-3">
+          <i class="fab fa-stripe text-emerald-400 text-lg"></i>
+          <span class="font-semibold text-white uppercase tracking-wider">Stripe</span>
+          <span class="text-slate-400">|</span>
+          <span class="text-slate-400">Mode: <span class="text-emerald-400 font-medium">{{ config.stripe.mode|default('mock')|upper }}</span></span>
+          <span class="text-slate-400">|</span>
+          {% if config.stripe.publishable_key and config.stripe.publishable_key != '(empty)' %}
+            <span class="text-emerald-400"><i class="fas fa-check-circle mr-1"></i>Key: {{ config.stripe.publishable_key }}</span>
+          {% else %}
+            <span class="text-slate-500"><i class="fas fa-circle mr-1"></i>Key: (empty)</span>
+          {% endif %}
+          <span class="text-slate-400">|</span>
+          {% if config.stripe.secret_key_configured %}
+            <span class="text-emerald-400"><i class="fas fa-check-circle mr-1"></i>Secret configured</span>
+          {% else %}
+            <span class="text-slate-500"><i class="fas fa-circle mr-1"></i>Secret missing</span>
+          {% endif %}
+          <span class="text-slate-400">|</span>
+          {% if config.stripe.webhook_configured %}
+            <span class="text-emerald-400"><i class="fas fa-check-circle mr-1"></i>Webhook configured</span>
+          {% else %}
+            <span class="text-slate-500"><i class="fas fa-circle mr-1"></i>Webhook missing</span>
+          {% endif %}
+        </div>
+      </div>
+      <!-- Form -->
+      <form method="POST" action="/admin/settings/stripe" class="p-5 space-y-4">
+        <div>
+          <label for="stripe_pk" class="block text-sm font-medium text-slate-300 mb-1">Publishable Key</label>
+          <input type="text" id="stripe_pk" name="publishable_key" value="{{ settings.stripe.publishable_key }}"
+            class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-emerald-500 transition"
+            placeholder="pk_live_...">
+        </div>
+        <div>
+          <label for="stripe_sk" class="block text-sm font-medium text-slate-300 mb-1">Secret Key</label>
+          <input type="password" id="stripe_sk" name="secret_key" value="{{ settings.stripe.secret_key }}"
+            class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-emerald-500 transition"
+            placeholder="sk_live_...">
+        </div>
+        <div>
+          <label for="stripe_ws" class="block text-sm font-medium text-slate-300 mb-1">Webhook Secret</label>
+          <input type="password" id="stripe_ws" name="webhook_secret" value="{{ settings.stripe.webhook_secret }}"
+            class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-emerald-500 transition"
+            placeholder="whsec_...">
+        </div>
+        <div class="pt-1">
+          <button type="submit" class="btn-action bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium px-5 py-2 rounded-lg">
+            <i class="fas fa-save mr-1"></i>Save Stripe
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ========== EMAIL SECTION ========== -->
+    <div class="section-card bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
+      <!-- Summary Bar -->
+      <div class="bg-slate-750 px-5 py-2.5 border-b border-slate-700 flex items-center justify-between text-xs">
+        <div class="flex items-center space-x-3">
+          <i class="fas fa-envelope text-emerald-400 text-lg"></i>
+          <span class="font-semibold text-white uppercase tracking-wider">Email</span>
+          <span class="text-slate-400">|</span>
+          <span class="text-slate-400">Provider: <span class="text-emerald-400 font-medium">{{ config.email.provider|default('log')|upper }}</span></span>
+          <span class="text-slate-400">|</span>
+          {% if config.email.provider != 'log' %}
+            <span class="text-emerald-400"><i class="fas fa-check-circle mr-1"></i>Configured</span>
+          {% else %}
+            <span class="text-amber-400"><i class="fas fa-info-circle mr-1"></i>Log mode (no sends)</span>
+          {% endif %}
+          <span class="text-slate-400">|</span>
+          <span class="text-slate-400">From: <span class="text-slate-300">{{ config.email.from|default('noreply@palmfi.com') }}</span></span>
+        </div>
+      </div>
+      <!-- Form -->
+      <form method="POST" action="/admin/settings/email" class="p-5 space-y-4">
+        <div>
+          <label for="email_provider" class="block text-sm font-medium text-slate-300 mb-1">Provider</label>
+          <select id="email_provider" name="provider"
+            class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 transition">
+            <option value="log" {% if settings.email.provider == 'log' %}selected{% endif %}>Log (Console Only)</option>
+            <option value="sendgrid" {% if settings.email.provider == 'sendgrid' %}selected{% endif %}>SendGrid</option>
+            <option value="ses" {% if settings.email.provider == 'ses' %}selected{% endif %}>Amazon SES</option>
+          </select>
+        </div>
+        <div>
+          <label for="email_key" class="block text-sm font-medium text-slate-300 mb-1">API Key</label>
+          <input type="password" id="email_key" name="api_key" value="{{ settings.email.api_key }}"
+            class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-emerald-500 transition"
+            placeholder="SG.xxxxx... or SES access key">
+        </div>
+        <div>
+          <label for="email_from" class="block text-sm font-medium text-slate-300 mb-1">From Address</label>
+          <input type="email" id="email_from" name="from_address" value="{{ settings.email.from_address }}"
+            class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-emerald-500 transition"
+            placeholder="noreply@palmfi.com">
+        </div>
+        <div class="pt-1">
+          <button type="submit" class="btn-action bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium px-5 py-2 rounded-lg">
+            <i class="fas fa-save mr-1"></i>Save Email
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ========== KYC SECTION ========== -->
+    <div class="section-card bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
+      <!-- Summary Bar -->
+      <div class="bg-slate-750 px-5 py-2.5 border-b border-slate-700 flex items-center justify-between text-xs">
+        <div class="flex items-center space-x-3">
+          <i class="fas fa-passport text-emerald-400 text-lg"></i>
+          <span class="font-semibold text-white uppercase tracking-wider">KYC</span>
+          <span class="text-slate-400">|</span>
+          <span class="text-slate-400">Provider: <span class="text-emerald-400 font-medium">{{ config.kyc.provider|default('mock')|upper }}</span></span>
+          <span class="text-slate-400">|</span>
+          {% if config.kyc.provider != 'mock' %}
+            <span class="text-emerald-400"><i class="fas fa-check-circle mr-1"></i>Live provider active</span>
+          {% else %}
+            <span class="text-amber-400"><i class="fas fa-info-circle mr-1"></i>Mock mode (no verifications)</span>
+          {% endif %}
+        </div>
+      </div>
+      <!-- Form -->
+      <form method="POST" action="/admin/settings/kyc" class="p-5 space-y-4">
+        <div>
+          <label for="kyc_provider" class="block text-sm font-medium text-slate-300 mb-1">Provider</label>
+          <select id="kyc_provider" name="provider"
+            class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 transition">
+            <option value="mock" {% if settings.kyc.provider == 'mock' %}selected{% endif %}>Mock (No verification)</option>
+            <option value="stripe-identity" {% if settings.kyc.provider == 'stripe-identity' %}selected{% endif %}>Stripe Identity</option>
+            <option value="persona" {% if settings.kyc.provider == 'persona' %}selected{% endif %}>Persona</option>
+            <option value="onfido" {% if settings.kyc.provider == 'onfido' %}selected{% endif %}>Onfido</option>
+          </select>
+        </div>
+        <div>
+          <label for="kyc_key" class="block text-sm font-medium text-slate-300 mb-1">API Key</label>
+          <input type="password" id="kyc_key" name="api_key" value="{{ settings.kyc.api_key }}"
+            class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-emerald-500 transition"
+            placeholder="Provider API key or token">
+        </div>
+        <div class="pt-1">
+          <button type="submit" class="btn-action bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium px-5 py-2 rounded-lg">
+            <i class="fas fa-save mr-1"></i>Save KYC
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ========== DOMAIN SECTION ========== -->
+    <div class="section-card bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
+      <!-- Summary Bar -->
+      <div class="bg-slate-750 px-5 py-2.5 border-b border-slate-700 flex items-center justify-between text-xs">
+        <div class="flex items-center space-x-3">
+          <i class="fas fa-globe text-emerald-400 text-lg"></i>
+          <span class="font-semibold text-white uppercase tracking-wider">Domain</span>
+          <span class="text-slate-400">|</span>
+          <span class="text-slate-400">URL: <span class="text-slate-300">{{ config.domain.url|default('https://palm.ngrok.app') }}</span></span>
+          <span class="text-slate-400">|</span>
+          <span class="text-slate-400">Webhook: <span class="text-slate-300">{{ settings.domain.stripe_webhook_path|default('/stripe/webhook') }}</span></span>
+        </div>
+      </div>
+      <!-- Form -->
+      <form method="POST" action="/admin/settings/domain" class="p-5 space-y-4">
+        <div>
+          <label for="domain_url" class="block text-sm font-medium text-slate-300 mb-1">Domain URL</label>
+          <input type="text" id="domain_url" name="url" value="{{ settings.domain.url }}"
+            class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-emerald-500 transition"
+            placeholder="https://palm.ngrok.app">
+        </div>
+        <div>
+          <label for="domain_webhook" class="block text-sm font-medium text-slate-300 mb-1">Stripe Webhook Path</label>
+          <input type="text" id="domain_webhook" name="stripe_webhook_path" value="{{ settings.domain.stripe_webhook_path }}"
+            class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-emerald-500 transition"
+            placeholder="/stripe/webhook">
+        </div>
+        <div class="pt-1">
+          <button type="submit" class="btn-action bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium px-5 py-2 rounded-lg">
+            <i class="fas fa-save mr-1"></i>Save Domain
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- Apply Settings Button -->
+  <div class="mt-8 mb-8">
+    <form method="POST" action="/admin/settings/apply">
+      <button type="submit"
+        class="btn-action w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-lg py-4 rounded-xl shadow-lg shadow-emerald-900/30
+          flex items-center justify-center space-x-3">
+        <i class="fas fa-check-double text-xl"></i>
+        <span>Apply Settings</span>
+        <i class="fas fa-arrow-right text-lg"></i>
+      </button>
+    </form>
+    <p class="text-xs text-slate-500 text-center mt-2">Applies all saved settings to the running application (Stripe keys, email config, etc.)</p>
+  </div>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Auto-hide flash messages after 6 seconds
+  const flashes = document.querySelectorAll('[class*="bg-emerald-900/50"], [class*="bg-red-900/50"], [class*="bg-amber-900/50"]');
+  flashes.forEach(function(el) {
+    setTimeout(function() {
+      el.style.transition = 'opacity 0.5s ease';
+      el.style.opacity = '0';
+      setTimeout(function() { el.style.display = 'none'; }, 500);
+    }, 6000);
+  });
+});
+</script>
+
+</body></html>

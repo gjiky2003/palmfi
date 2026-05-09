@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Apply - PalmFi</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:"#1a365d",accent:"#059669"}}}}</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+.step-dot { transition: all 0.3s ease; }
+</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<nav class="bg-primary text-white shadow-lg">
+<div class="max-w-7xl mx-auto px-4"><div class="flex justify-between h-16 items-center">
+<a href="/" class="text-2xl font-bold"><i class="fas fa-bolt mr-2 text-accent"></i>PalmFi</a>
+<div class="flex items-center space-x-4">
+<a href="/dashboard" class="hover:text-accent transition">Dashboard</a>
+<a href="/logout" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm">Logout</a>
+</div></div></div></nav>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}{% for cat,msg in messages %}
+<div class="max-w-7xl mx-auto px-4 mt-4"><div class="p-4 rounded-lg text-sm font-medium {{ 'bg-green-100 text-green-800' if cat=='success' else 'bg-red-100 text-red-800' if cat=='error' else 'bg-yellow-100 text-yellow-800' }}">{{ msg }}</div></div>
+{% endfor %}{% endif %}{% endwith %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+<div class="text-center mb-8"><h1 class="text-4xl font-bold text-primary">Loan Application</h1><p class="text-gray-500 mt-2 text-sm">Formal application — all fields required</p></div>
+
+<!-- Step Progress -->
+<div class="max-w-2xl mx-auto mb-10">
+<div class="relative">
+  <div class="flex justify-between">
+    {% for s in range(1,6) %}
+    <div class="flex flex-col items-center">
+      <div class="step-dot w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold
+        {{ 'bg-accent text-white' if s <= step else 'bg-gray-200 text-gray-500' }}
+        {{ 'ring-4 ring-accent ring-opacity-30' if s == step else '' }}">
+        {{ s }}
+      </div>
+      <span class="text-xs mt-1 {{ 'text-accent font-semibold' if s == step else 'text-gray-400' }}">
+        {% if s==1 %}Identity{% elif s==2 %}Employment{% elif s==3 %}Financial{% elif s==4 %}Loan{% else %}Review{% endif %}
+      </span>
+    </div>
+    {% if s < 5 %}
+    <div class="flex-1 mx-2 mt-5 h-0.5 {{ 'bg-accent' if s < step else 'bg-gray-200' }}"></div>
+    {% endif %}
+    {% endfor %}
+  </div>
+</div>
+</div>
+
+<form method="POST" action="/apply" class="bg-white rounded-2xl shadow-xl p-8">
+
+{% if step == 1 %}
+<!-- Step 1: Identity -->
+<h2 class="text-xl font-semibold mb-6 flex items-center gap-2"><i class="fas fa-id-card text-accent"></i> Personal Identity</h2>
+<div class="grid md:grid-cols-2 gap-6">
+<div><label class="block text-sm font-medium text-gray-700">Legal First Name</label><input type="text" name="first_name" value="{{ data.first_name or '' }}" required class="w-full mt-1 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-accent focus:border-accent"></div>
+<div><label class="block text-sm font-medium text-gray-700">Legal Last Name</label><input type="text" name="last_name" value="{{ data.last_name or '' }}" required class="w-full mt-1 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-accent focus:border-accent"></div>
+<div><label class="block text-sm font-medium text-gray-700">Date of Birth</label><input type="date" name="date_of_birth" value="{{ data.date_of_birth or '' }}" required class="w-full mt-1 px-4 py-3 border rounded-xl"></div>
+<div><label class="block text-sm font-medium text-gray-700">Social Security Number <span class="text-xs text-gray-400">(last 4 digits)</span></label>
+  <input type="password" name="ssn_last4" value="{{ data.ssn_last4 or '' }}" maxlength="4" pattern="[0-9]{4}" placeholder="XXXX" required class="w-full mt-1 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-accent"></div>
+<div><label class="block text-sm font-medium text-gray-700">Phone Number</label><input type="tel" name="phone" value="{{ data.phone or '' }}" placeholder="(555) 123-4567" required class="w-full mt-1 px-4 py-3 border rounded-xl"></div>
+<div><label class="block text-sm font-medium text-gray-700">Email</label><input type="email" name="email" value="{{ data.email or user_email or '' }}" readonly class="w-full mt-1 px-4 py-3 bg-gray-100 border rounded-xl text-gray-500"><p class="text-xs text-gray-400 mt-1">Verified on account</p></div>
+</div>
+<div class="mt-8 flex justify-end"><button type="submit" name="step" value="2" class="bg-accent hover:bg-green-700 text-white px-10 py-3 rounded-xl font-semibold text-lg">Continue <i class="fas fa-arrow-right ml-2"></i></button></div>
+
+{% elif step == 2 %}
+<!-- Step 2: Employment & Residence -->
+<h2 class="text-xl font-semibold mb-6 flex items-center gap-2"><i class="fas fa-briefcase text-accent"></i> Employment & Residence</h2>
+<div class="grid md:grid-cols-2 gap-6">
+<div><label class="block text-sm font-medium text-gray-700">Current Employer</label><input type="text" name="employer_name" value="{{ data.employer_name or '' }}" required class="w-full mt-1 px-4 py-3 border rounded-xl"></div>
+<div><label class="block text-sm font-medium text-gray-700">Employment Status</label>
+  <select name="employment_status" class="w-full mt-1 px-4 py-3 border rounded-xl">
+    <option value="employed" {{ 'selected' if data.employment_status=='employed' }}>Employed Full-Time</option>
+    <option value="part-time" {{ 'selected' if data.employment_status=='part-time' }}>Employed Part-Time</option>
+    <option value="self-employed" {{ 'selected' if data.employment_status=='self-employed' }}>Self-Employed</option>
+    <option value="contractor" {{ 'selected' if data.employment_status=='contractor' }}>Independent Contractor</option>
+    <option value="retired" {{ 'selected' if data.employment_status=='retired' }}>Retired</option>
+    <option value="unemployed" {{ 'selected' if data.employment_status=='unemployed' }}>Unemployed</option>
+  </select></div>
+<div><label class="block text-sm font-medium text-gray-700">Employer Phone</label><input type="tel" name="employer_phone" value="{{ data.employer_phone or '' }}" placeholder="For verification purposes" class="w-full mt-1 px-4 py-3 border rounded-xl"></div>
+<div><label class="block text-sm font-medium text-gray-700">Employment Length</label>
+  <select name="employment_length_months" class="w-full mt-1 px-4 py-3 border rounded-xl">
+    {% for val,label in [('0','Less than 1 year'),('12','1 year'),('24','2 years'),('36','3 years'),('60','5 years'),('120','10+ years')] %}
+    <option value="{{ val }}" {{ 'selected' if data.employment_length_months==val }}>{{ label }}</option>
+    {% endfor %}
+  </select></div>
+<div><label class="block text-sm font-medium text-gray-700">Residential Address</label><input type="text" name="address" value="{{ data.address or '' }}" placeholder="Street address" required class="w-full mt-1 px-4 py-3 border rounded-xl"></div>
+<div><label class="block text-sm font-medium text-gray-700">City</label><input type="text" name="city" value="{{ data.city or '' }}" required class="w-full mt-1 px-4 py-3 border rounded-xl"></div>
+<div class="grid grid-cols-2 gap-3">
+<div><label class="block text-sm font-medium text-gray-700">State</label><select name="state" class="w-full mt-1 px-4 py-3 border rounded-xl">
+  {% for s in ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'] %}
+  <option value="{{ s }}" {{ 'selected' if data.state==s }}>{{ s }}</option>
+  {% endfor %}</select></div>
+<div><label class="block text-sm font-medium text-gray-700">ZIP Code</label><input type="text" name="zip_code" value="{{ data.zip_code or '' }}" pattern="[0-9]{5}" maxlength="5" placeholder="12345" required class="w-full mt-1 px-4 py-3 border rounded-xl"></div>
+</div>
+<div><label class="block text-sm font-medium text-gray-700 mt-2">Housing Status</label>
+  <select name="home_ownership" class="w-full mt-1 px-4 py-3 border rounded-xl">
+    <option value="rent" {{ 'selected' if data.home_ownership=='rent' }}>Rent</option>
+    <option value="mortgage" {{ 'selected' if data.home_ownership=='mortgage' }}>Mortgage / Own with Loan</option>
+    <option value="own" {{ 'selected' if data.home_ownership=='own' }}>Own Free & Clear</option>
+  </select></div>
+<div><label class="block text-sm font-medium text-gray-700">Monthly Housing Payment ($)</label><input type="number" name="housing_payment" value="{{ data.housing_payment or '' }}" min="0" step="1" placeholder="e.g. 1200" required class="w-full mt-1 px-4 py-3 border rounded-xl"></div>
+</div>
+<div class="mt-8 flex justify-between">
+<button type="submit" name="step" value="1" class="bg-gray-200 hover:bg-gray-300 px-8 py-3 rounded-xl font-semibold"><i class="fas fa-arrow-left mr-2"></i> Back</button>
+<button type="submit" name="step" value="3" class="bg-accent hover:bg-green-700 text-white px-10 py-3 rounded-xl font-semibold">Continue <i class="fas fa-arrow-right ml-2"></i></button>
+</div>
+
+{% elif step == 3 %}
+<!-- Step 3: Financial Details -->
+<h2 class="text-xl font-semibold mb-6 flex items-center gap-2"><i class="fas fa-chart-line text-accent"></i> Financial Details</h2>
+<div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6 text-sm text-yellow-800">
+  <i class="fas fa-lock mr-2"></i> All data is encrypted in transit. Your income and credit information is used only for underwriting.
+</div>
+<div class="grid md:grid-cols-2 gap-6">
+<div><label class="block text-sm font-medium text-gray-700">Annual Gross Income ($)</label><input type="number" name="annual_income" value="{{ data.annual_income or '' }}" min="0" step="500" placeholder="e.g. 65000" required class="w-full mt-1 px-4 py-3 border rounded-xl"></div>
+<div><label class="block text-sm font-medium text-gray-700">Income Source</label>
+  <select name="income_source" class="w-full mt-1 px-4 py-3 border rounded-xl">
+    <option value="salary">Salary/Wages</option>
+    <option value="self-employed">Self-Employment</option>
+    <option value="investments">Investments</option>
+    <option value="ssi">Social Security/Disability</option>
+    <option value="other">Other</option>
+  </select></div>
+<div><label class="block text-sm font-medium text-gray-700">Pay Frequency</label>
+  <select name="pay_frequency" class="w-full mt-1 px-4 py-3 border rounded-xl">
+    <option value="weekly">Weekly</option>
+    <option value="biweekly">Bi-Weekly</option>
+    <option value="semimonthly">Semi-Monthly</option>
+    <option value="monthly">Monthly</option>
+  </select></div>
+<div><label class="block text-sm font-medium text-gray-700">Next Pay Date</label><input type="date" name="next_pay_date" value="{{ data.next_pay_date or '' }}" class="w-full mt-1 px-4 py-3 border rounded-xl"></div>
+<div><label class="block text-sm font-medium text-gray-700">Total Monthly Debt Payments ($)</label><input type="number" name="monthly_debt" value="{{ data.monthly_debt or '' }}" min="0" step="1" placeholder="e.g. 500" required class="w-full mt-1 px-4 py-3 border rounded-xl"><p class="text-xs text-gray-400 mt-1">Credit cards, car loans, student loans, child support, etc.</p></div>
+<div><label class="block text-sm font-medium text-gray-700">Credit Score Range</label>
+  <select name="credit_score_bucket" class="w-full mt-1 px-4 py-3 border rounded-xl">
+    <option value="800">800-850 (Excellent)</option>
+    <option value="740" selected>740-799 (Very Good)</option>
+    <option value="670">670-739 (Good)</option>
+    <option value="580">580-669 (Fair)</option>
+    <option value="500">Below 580 (Poor)</option>
+    <option value="0">I don't know</option>
+  </select></div>
+<div><label class="block text-sm font-medium text-gray-700">Estimated Credit Card Utilization</label>
+  <select name="utilization" class="w-full mt-1 px-4 py-3 border rounded-xl">
+    <option value="0.1">0-10% (Very Low)</option>
+    <option value="0.25">11-30% (Low)</option>
+    <option value="0.45">31-50% (Moderate)</option>
+    <option value="0.65">51-70% (High)</option>
+    <option value="0.85">71-100% (Maxed Out)</option>
+  </select><p class="text-xs text-gray-400 mt-1">How much of your available credit do you use each month?</p></div>
+<div><label class="block text-sm font-medium text-gray-700">Active Credit Lines</label>
+  <select name="num_credit_lines" class="w-full mt-1 px-4 py-3 border rounded-xl">
+    <option value="0">None</option>
+    <option value="2">1-2</option>
+    <option value="5" selected>3-6</option>
+    <option value="10">7-12</option>
+    <option value="15">13+</option>
+  </select></div>
+<div><label class="block text-sm font-medium text-gray-700">Derogatory Marks (past 7 years)</label>
+  <select name="num_derogatory" class="w-full mt-1 px-4 py-3 border rounded-xl">
+    <option value="0">None</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="5">4+</option>
+  </select><p class="text-xs text-gray-400 mt-1">Late payments, collections, charge-offs, etc.</p></div>
+<div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700">Bank Account for Direct Deposit</label>
+  <div class="grid md:grid-cols-2 gap-4 mt-1">
+  <div><input type="text" name="bank_routing" value="{{ data.bank_routing or '' }}" placeholder="Routing Number" pattern="[0-9]{9}" maxlength="9" required class="w-full px-4 py-3 border rounded-xl"></div>
+  <div><input type="text" name="bank_account" value="{{ data.bank_account or '' }}" placeholder="Account Number" required class="w-full px-4 py-3 border rounded-xl"></div>
+  </div>
+  <p class="text-xs text-gray-400 mt-1">For loan disbursement and auto-payments. Standard ACH only.</p>
+</div>
+</div>
+<div class="mt-8 flex justify-between">
+<button type="submit" name="step" value="2" class="bg-gray-200 hover:bg-gray-300 px-8 py-3 rounded-xl font-semibold"><i class="fas fa-arrow-left mr-2"></i> Back</button>
+<button type="submit" name="step" value="4" class="bg-accent hover:bg-green-700 text-white px-10 py-3 rounded-xl font-semibold">Continue <i class="fas fa-arrow-right ml-2"></i></button>
+</div>
+
+{% elif step == 4 %}
+<!-- Step 4: Loan Details & Documents -->
+<h2 class="text-xl font-semibold mb-6 flex items-center gap-2"><i class="fas fa-file-invoice-dollar text-accent"></i> Loan Request</h2>
+<div class="grid md:grid-cols-2 gap-6">
+<div><label class="block text-sm font-medium text-gray-700">Desired Loan Amount ($)</label>
+  <div class="mt-1 relative"><input type="range" name="loan_amount_slider" id="loanSlider" min="500" max="50000" step="100" value="{{ data.loan_amount or '5000' }}" class="w-full accent-accent" oninput="document.getElementById('loanDisplay').innerText = '$' + parseInt(this.value).toLocaleString(); document.getElementById('loanHidden').value = this.value">
+  <div class="flex justify-between text-xs text-gray-400 mt-1"><span>$500</span><span>$50,000</span></div>
+  <div class="text-center text-2xl font-bold text-accent mt-2" id="loanDisplay">${{ "{:,.0f}".format(data.loan_amount|float) if data.loan_amount else '$5,000' }}</div>
+  <input type="hidden" name="loan_amount" id="loanHidden" value="{{ data.loan_amount or '5000' }}">
+  </div>
+</div>
+<div><label class="block text-sm font-medium text-gray-700">Loan Purpose</label>
+  <select name="loan_purpose" class="w-full mt-1 px-4 py-3 border rounded-xl">
+    <option value="debt_consolidation">Debt Consolidation</option>
+    <option value="home_improvement">Home Improvement</option>
+    <option value="medical">Medical Expenses</option>
+    <option value="education">Education</option>
+    <option value="business">Business</option>
+    <option value="auto">Auto Purchase</option>
+    <option value="moving">Moving / Relocation</option>
+    <option value="wedding">Wedding</option>
+    <option value="vacation">Vacation</option>
+    <option value="personal">Other Personal</option>
+  </select></div>
+<div><label class="block text-sm font-medium text-gray-700">Desired Loan Term</label>
+  <select name="term_months" class="w-full mt-1 px-4 py-3 border rounded-xl">
+    <option value="12">12 months (shorter term, lower total interest)</option>
+    <option value="24" selected>24 months</option>
+    <option value="36">36 months</option>
+    <option value="48">48 months</option>
+    <option value="60">60 months (lower monthly payment)</option>
+  </select></div>
+</div>
+
+<!-- Document Upload Section -->
+<div class="border-t border-gray-200 mt-8 pt-6">
+<h3 class="font-semibold text-lg mb-4 flex items-center gap-2"><i class="fas fa-upload text-accent"></i> Document Upload</h3>
+<p class="text-sm text-gray-500 mb-4">Upload at least 2 of the following to expedite your application review.</p>
+<div class="grid md:grid-cols-3 gap-4">
+<div class="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-accent transition cursor-pointer" onclick="document.getElementById('paystub').click()">
+  <i class="fas fa-file-invoice text-3xl text-gray-300 mb-2"></i>
+  <p class="text-sm font-medium">Recent Pay Stubs</p>
+  <p class="text-xs text-gray-400">Last 2 pay periods</p>
+  <input type="file" id="paystub" name="doc_paystub" accept=".pdf,.png,.jpg" class="hidden" onchange="this.parentElement.classList.add('border-accent','bg-green-50');this.parentElement.querySelector('.fa-file-invoice').className='fas fa-check-circle text-3xl text-accent mb-2'">
+</div>
+<div class="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-accent transition cursor-pointer" onclick="document.getElementById('w2').click()">
+  <i class="fas fa-file-alt text-3xl text-gray-300 mb-2"></i>
+  <p class="text-sm font-medium">W-2 / Tax Return</p>
+  <p class="text-xs text-gray-400">Most recent year</p>
+  <input type="file" id="w2" name="doc_w2" accept=".pdf,.png,.jpg" class="hidden" onchange="this.parentElement.classList.add('border-accent','bg-green-50');this.parentElement.querySelector('.fa-file-alt').className='fas fa-check-circle text-3xl text-accent mb-2'">
+</div>
+<div class="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-accent transition cursor-pointer" onclick="document.getElementById('bankstmt').click()">
+  <i class="fas fa-university text-3xl text-gray-300 mb-2"></i>
+  <p class="text-sm font-medium">Bank Statements</p>
+  <p class="text-xs text-gray-400">Last 60 days</p>
+  <input type="file" id="bankstmt" name="doc_bank" accept=".pdf,.png,.jpg" class="hidden" onchange="this.parentElement.classList.add('border-accent','bg-green-50');this.parentElement.querySelector('.fa-university').className='fas fa-check-circle text-3xl text-accent mb-2'">
+</div>
+</div>
+</div>
+
+<!-- Disclosures -->
+<div class="bg-gray-50 rounded-xl p-4 mt-6 text-xs text-gray-600 space-y-2">
+<label class="flex items-start gap-3"><input type="checkbox" name="consent_credit" required class="mt-1"> <span>I authorize PalmFi to obtain my credit report from one or more consumer reporting agencies to verify my identity and evaluate my creditworthiness. This will appear as a <strong>soft inquiry</strong> on my credit report.</span></label>
+<label class="flex items-start gap-3"><input type="checkbox" name="consent_terms" required class="mt-1"> <span>I agree to the <a href="/terms" target="_blank" class="text-accent underline">Terms & Conditions</a> and <a href="/privacy" target="_blank" class="text-accent underline">Privacy Policy</a>.</span></label>
+<label class="flex items-start gap-3"><input type="checkbox" name="consent_electronic" required class="mt-1"> <span>I consent to receive electronic disclosures and communications related to this application.</span></label>
+</div>
+
+<div class="mt-8 flex justify-between">
+<button type="submit" name="step" value="3" class="bg-gray-200 hover:bg-gray-300 px-8 py-3 rounded-xl font-semibold"><i class="fas fa-arrow-left mr-2"></i> Back</button>
+<button type="submit" name="step" value="review" class="bg-accent hover:bg-green-700 text-white px-10 py-3 rounded-xl font-semibold text-lg">Review Application <i class="fas fa-arrow-right ml-2"></i></button>
+</div>
+
+{% elif step == 5 %}
+<!-- Step 5: Review -->
+<h2 class="text-xl font-semibold mb-6 flex items-center gap-2"><i class="fas fa-search text-accent"></i> Review Your Application</h2>
+<p class="text-sm text-gray-500 mb-6">Please verify all information before submitting. You cannot edit after submission.</p>
+<div class="bg-gray-50 rounded-xl p-6 space-y-5">
+  <div class="border-b pb-4">
+    <h4 class="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-3">Identity</h4>
+    <div class="grid grid-cols-2 gap-3 text-sm">
+      <div><span class="text-gray-500">Name:</span> <span class="font-semibold">{{ data.first_name }} {{ data.last_name }}</span></div>
+      <div><span class="text-gray-500">DOB:</span> <span>{{ data.date_of_birth }}</span></div>
+      <div><span class="text-gray-500">SSN (last 4):</span> <span>XXX-XX-{{ data.ssn_last4 }}</span></div>
+      <div><span class="text-gray-500">Phone:</span> <span>{{ data.phone }}</span></div>
+    </div>
+  </div>
+  <div class="border-b pb-4">
+    <h4 class="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-3">Employment & Housing</h4>
+    <div class="grid grid-cols-2 gap-3 text-sm">
+      <div><span class="text-gray-500">Employer:</span> <span>{{ data.employer_name }}</span></div>
+      <div><span class="text-gray-500">Status:</span> <span>{{ data.employment_status.replace('-',' ').title() }}</span></div>
+      <div><span class="text-gray-500">Tenure:</span> <span>{% if data.employment_length_months == '0' %}&lt;1 yr{% else %}{{ (data.employment_length_months|int) // 12 }} yr{% endif %}</span></div>
+      <div><span class="text-gray-500">Housing:</span> <span>{{ data.home_ownership.title() }}</span></div>
+      <div><span class="text-gray-500">Address:</span> <span class="text-xs">{{ data.address }}, {{ data.city }}, {{ data.state }} {{ data.zip_code }}</span></div>
+    </div>
+  </div>
+  <div class="border-b pb-4">
+    <h4 class="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-3">Financial</h4>
+    <div class="grid grid-cols-2 gap-3 text-sm">
+      <div><span class="text-gray-500">Annual Income:</span> <span class="font-semibold">${{ "{:,.0f}".format(data.annual_income|float) }}</span></div>
+      <div><span class="text-gray-500">Monthly Debt:</span> <span>${{ "{:,.0f}".format(data.monthly_debt|float) }}</span></div>
+      <div><span class="text-gray-500">Bank:</span> <span>****{{ (data.bank_account[-4:] if data.bank_account else 'N/A') }}</span></div>
+    </div>
+  </div>
+  <div>
+    <h4 class="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-3">Loan Request</h4>
+    <div class="grid grid-cols-2 gap-3 text-sm">
+      <div><span class="text-gray-500">Amount:</span> <span class="font-bold text-lg text-accent">${{ "{:,.0f}".format(data.loan_amount|float) }}</span></div>
+      <div><span class="text-gray-500">Term:</span> <span>{{ data.term_months }} months</span></div>
+      <div><span class="text-gray-500">Purpose:</span> <span>{{ data.loan_purpose.replace('_',' ').title() }}</span></div>
+      <div><span class="text-gray-500">Documents:</span><span class="text-green-600"><i class="fas fa-check-circle"></i> Ready to upload</span></div>
+    </div>
+  </div>
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4 flex items-center justify-between">
+    <div class="flex items-center gap-2 text-sm">
+      <i class="fas fa-university text-blue-500"></i>
+      <span class="text-blue-800">Connect your bank for instant cash flow analysis — <strong>better rates, higher approval odds</strong></span>
+    </div>
+    <a href="/connect-bank" class="text-xs bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg font-medium whitespace-nowrap">Connect Bank</a>
+  </div>
+  <div class="bg-gray-100 rounded-lg p-3 mt-4">
+    <p class="text-xs text-gray-500"><i class="fas fa-info-circle mr-1"></i> By clicking "Submit Application", you certify that all information above is true and complete. False statements may result in denial or legal action.</p>
+  </div>
+</div>
+<div class="mt-8 flex justify-between">
+<button type="submit" name="step" value="4" class="bg-gray-200 hover:bg-gray-300 px-8 py-3 rounded-xl font-semibold"><i class="fas fa-arrow-left mr-2"></i> Edit</button>
+<button type="submit" name="submit" value="1" class="bg-accent hover:bg-green-700 text-white px-10 py-4 rounded-xl font-semibold text-lg"><i class="fas fa-paper-plane mr-2"></i> Submit Application</button>
+</div>
+{% endif %}
+
+</form>
+</div>
+<footer class="bg-gray-100 py-8"><div class="text-center text-gray-500 text-sm"><p>&copy; 2026 PalmFi — NMLS #000000 | Equal Opportunity Lender</p></div></footer>
+</body></html>

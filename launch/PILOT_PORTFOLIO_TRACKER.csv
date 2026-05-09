@@ -1,0 +1,11 @@
+Loan ID,Borrower Name,Loan Amount,APR,Term (months),Monthly Payment,Origination Fee,Risk Tier,Risk Score,Borrower Credit Score,Borrower Annual Income,DTI Ratio,Origination Date,First Payment Date,Disbursement Method,Status,Payments Received,Total Paid,Remaining Balance,Days Past Due,Collection Stage,Notes
+1,,,,,,,,,,,,,,,active,0,$0,,0,0,Pilot loan 1
+2,,,,,,,,,,,,,,,active,0,$0,,0,0,Pilot loan 2
+3,,,,,,,,,,,,,,,active,0,$0,,0,0,Pilot loan 3
+4,,,,,,,,,,,,,,,active,0,$0,,0,0,Pilot loan 4
+5,,,,,,,,,,,,,,,active,0,$0,,0,0,Pilot loan 5
+6,,,,,,,,,,,,,,,active,0,$0,,0,0,Pilot loan 6
+7,,,,,,,,,,,,,,,active,0,$0,,0,0,Pilot loan 7
+8,,,,,,,,,,,,,,,active,0,$0,,0,0,Pilot loan 8
+9,,,,,,,,,,,,,,,active,0,$0,,0,0,Pilot loan 9
+10,,,,,,,,,,,,,,,active,0,$0,,0,0,Pilot loan 10

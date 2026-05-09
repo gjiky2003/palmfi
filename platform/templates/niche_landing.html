@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>{{ data.config.label }} - PalmFi</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#1a365d',accent:'#059669',gold:'#d4a017'}}}}</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-sans">
+<nav class="bg-primary text-white px-6 py-4 flex justify-between items-center shadow-lg">
+  <a href="/dashboard" class="text-xl font-bold"><i class="fas fa-leaf mr-2"></i>PalmFi</a>
+  <div class="flex items-center space-x-4">
+    <a href="/niche-list" class="text-sm hover:text-gold transition"><i class="fas fa-arrow-left mr-1"></i>All Programs</a>
+    <a href="/dashboard" class="text-sm hover:text-gold transition"><i class="fas fa-chart-pie mr-1"></i>Dashboard</a>
+    <a href="/logout" class="bg-red-600 px-3 py-1.5 rounded-lg text-sm hover:bg-red-700 transition">Logout</a>
+  </div>
+</nav>
+<div class="max-w-5xl mx-auto px-4 py-8">
+
+  <!-- Hero Section -->
+  <div class="bg-gradient-to-br from-primary to-blue-900 text-white rounded-3xl shadow-xl p-10 mb-8">
+    <div class="flex items-center mb-4">
+      <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-3xl mr-4">
+        <i class="fas {{ data.config.icon }}"></i>
+      </div>
+      <div>
+        <h1 class="text-3xl font-bold">{{ data.config.label }}</h1>
+        <p class="text-lg text-white/80">{{ data.config.description }}</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-3 gap-6 mt-8 text-center">
+      <div class="bg-white/10 rounded-xl p-4">
+        <div class="text-2xl font-bold">${{ "{:,.0f}".format(data.config.max_loan) }}</div>
+        <div class="text-xs text-white/70">Max Loan</div>
+      </div>
+      <div class="bg-white/10 rounded-xl p-4">
+        <div class="text-2xl font-bold">${{ "{:,.0f}".format(data.config.min_income) }}/yr</div>
+        <div class="text-xs text-white/70">Min Income</div>
+      </div>
+      <div class="bg-white/10 rounded-xl p-4">
+        <div class="text-2xl font-bold">{{ data.config.recommended_product|replace('_', ' ')|title }}</div>
+        <div class="text-xs text-white/70">Recommended Product</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Example Scenarios -->
+  {% if data.example_scenarios %}
+  <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+    <h2 class="text-xl font-bold text-primary mb-4"><i class="fas fa-lightbulb text-gold mr-2"></i>Example Scenarios</h2>
+    <div class="grid md:{% if data.example_scenarios|length == 2 %}2{% else %}3{% endif %} gap-4">
+      {% for ex in data.example_scenarios %}
+      <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+        <div class="font-semibold text-primary mb-2">{{ ex.scenario }}</div>
+        <div class="space-y-1 text-sm">
+          <span class="block"><span class="text-gray-400">Loan:</span> <strong>{{ ex.loan }}</strong></span>
+          <span class="block"><span class="text-gray-400">Term:</span> <strong>{{ ex.term }}</strong></span>
+          {% if ex.income_share %}
+          <span class="block text-accent">{{ ex.income_share }}</span>
+          {% endif %}
+          {% if ex.special %}
+          <span class="block text-blue-600">{{ ex.special }}</span>
+          {% endif %}
+          {% if ex.rate %}
+          <span class="block text-accent">{{ ex.rate }}</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Documents Needed -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+    <h2 class="text-xl font-bold text-primary mb-4"><i class="fas fa-file-alt mr-2"></i>Documents Needed</h2>
+    <div class="grid md:grid-cols-2 gap-3">
+      {% for doc in data.config.documents %}
+      <div class="flex items-center text-sm">
+        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+          <i class="fas fa-check text-blue-600 text-xs"></i>
+        </div>
+        <span>{{ doc }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Alternative Data -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+    <h2 class="text-xl font-bold text-primary mb-4"><i class="fas fa-database mr-2"></i>What We Look At</h2>
+    <div class="grid md:grid-cols-2 gap-3">
+      {% for ad in data.config.alternative_data %}
+      <div class="flex items-center text-sm">
+        <div class="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+          <i class="fas fa-check text-accent text-xs"></i>
+        </div>
+        <span>{{ ad|replace('_', ' ')|title }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Testimonials -->
+  {% if data.testimonials %}
+  <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+    <h2 class="text-xl font-bold text-primary mb-4"><i class="fas fa-quote-left mr-2"></i>Real Stories</h2>
+    <div class="grid md:{% if data.testimonials|length == 2 %}2{% else %}3{% endif %} gap-4">
+      {% for t in data.testimonials %}
+      <div class="bg-gray-50 rounded-xl p-4">
+        <div class="flex text-gold text-sm mb-2">
+          {% for _ in range(t.rating) %}<i class="fas fa-star"></i>{% endfor %}
+        </div>
+        <p class="text-sm text-gray-600 italic">"{{ t.text }}"</p>
+        <div class="font-semibold text-sm mt-2">— {{ t.name }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- CTA -->
+  <div class="text-center">
+    <a href="/niche/{{ niche_id }}/apply" class="inline-block bg-accent text-white px-10 py-4 rounded-xl text-lg font-semibold hover:bg-emerald-700 transition shadow-lg">
+      <i class="fas fa-arrow-right mr-2"></i>Apply for {{ data.config.label }}
+    </a>
+    <p class="text-xs text-gray-400 mt-3">No impact to your credit score for checking eligibility</p>
+  </div>
+</div>
+</body></html>

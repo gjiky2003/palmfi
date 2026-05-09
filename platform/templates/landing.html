@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>PalmFi - AI Lending</title>
+<script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#1a365d',accent:'#2b6cb0',gold:'#d4a017'}}}}</script></head>
+<body class="bg-gray-50 font-sans">
+<nav class="bg-primary text-white px-6 py-4 flex justify-between items-center shadow-lg">
+  <div class="flex items-center space-x-2"><i class="fas fa-leaf text-2xl"></i><span class="text-xl font-bold">PalmFi</span></div>
+  <div class="flex items-center space-x-4">
+    <a href="/about" class="text-sm hover:text-gold transition hidden md:inline">About</a>
+    <a href="/terms" class="text-sm hover:text-gold transition hidden md:inline">Terms</a>
+    <a href="/login" class="bg-accent px-4 py-1.5 rounded-lg text-sm hover:bg-blue-700 transition">Sign In</a>
+    <a href="/register" class="bg-gold text-primary px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-yellow-500 transition">Get Started</a>
+  </div>
+</nav>
+
+<section class="bg-gradient-to-br from-primary to-accent text-white py-20">
+  <div class="max-w-5xl mx-auto px-4 text-center">
+    <h1 class="text-4xl md:text-5xl font-bold mb-6">AI-Powered Lending.<br>Fair. Fast. Transparent.</h1>
+    <p class="text-lg text-blue-200 mb-8 max-w-2xl mx-auto">Our ML engine scores your application in milliseconds using 18+ financial factors. Get risk-based pricing from 5.99% APR, no human bias, no waiting.</p>
+    <div class="flex justify-center space-x-4">
+      <a href="/register" class="bg-gold text-primary px-8 py-3 rounded-xl font-bold hover:bg-yellow-500 transition shadow-lg text-lg"><i class="fas fa-rocket mr-2"></i>Get Started</a>
+      <a href="/about" class="border border-white px-8 py-3 rounded-xl font-semibold hover:bg-white hover:text-primary transition"><i class="fas fa-info-circle mr-2"></i>Learn More</a>
+    </div>
+  </div>
+</section>
+
+<section class="py-16 max-w-6xl mx-auto px-4">
+  <h2 class="text-2xl md:text-3xl font-bold text-center text-primary mb-12">How PalmFi Works</h2>
+  <div class="grid md:grid-cols-3 gap-8">
+    <div class="bg-white rounded-2xl shadow-lg p-8 text-center">
+      <div class="w-16 h-16 bg-blue-100 text-accent rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fas fa-file-alt text-2xl"></i></div>
+      <h3 class="font-bold text-lg mb-2">Apply Online</h3>
+      <p class="text-gray-500 text-sm">Complete our quick 4-step application from any device. No paperwork, no branches.</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-lg p-8 text-center">
+      <div class="w-16 h-16 bg-blue-100 text-accent rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fas fa-microchip text-2xl"></i></div>
+      <h3 class="font-bold text-lg mb-2">AI Scores You</h3>
+      <p class="text-gray-500 text-sm">Our ensemble ML model (AUC 0.756) evaluates your financial profile and assigns fair risk-based pricing.</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-lg p-8 text-center">
+      <div class="w-16 h-16 bg-blue-100 text-accent rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fas fa-hand-holding-usd text-2xl"></i></div>
+      <h3 class="font-bold text-lg mb-2">Get Funded Fast</h3>
+      <p class="text-gray-500 text-sm">Accept your offer, verify your identity, and receive funds within 24 hours.</p>
+    </div>
+  </div>
+</section>
+
+<section class="bg-white py-16">
+  <div class="max-w-5xl mx-auto px-4">
+    <h2 class="text-2xl font-bold text-center text-primary mb-12">Features</h2>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="flex items-start space-x-4 p-4"><i class="fas fa-robot text-accent text-xl mt-1"></i><div><h4 class="font-semibold">AI Underwriting Engine</h4><p class="text-sm text-gray-500">Pure Python ML ensemble (LR + Tree + RF) with 0.756 AUC</p></div></div>
+      <div class="flex items-start space-x-4 p-4"><i class="fas fa-calculator text-accent text-xl mt-1"></i><div><h4 class="font-semibold">Risk-Based Pricing</h4><p class="text-sm text-gray-500">APR from 5.99% (A-tier) to 35.99% (E-tier) based on your risk profile</p></div></div>
+      <div class="flex items-start space-x-4 p-4"><i class="fas fa-shield-alt text-accent text-xl mt-1"></i><div><h4 class="font-semibold">Automated KYC</h4><p class="text-sm text-gray-500">Upload documents once, auto-verify, no delays</p></div></div>
+      <div class="flex items-start space-x-4 p-4"><i class="fas fa-cog text-accent text-xl mt-1"></i><div><h4 class="font-semibold">Auto Collections</h4><p class="text-sm text-gray-500">5-stage escalation with auto-reminders, late fees, and charge-off</p></div></div>
+      <div class="flex items-start space-x-4 p-4"><i class="fas fa-credit-card text-accent text-xl mt-1"></i><div><h4 class="font-semibold">Flexible Payments</h4><p class="text-sm text-gray-500">Monthly or bi-weekly, with full amortization schedule</p></div></div>
+      <div class="flex items-start space-x-4 p-4"><i class="fas fa-chart-line text-accent text-xl mt-1"></i><div><h4 class="font-semibold">Admin Dashboard</h4><p class="text-sm text-gray-500">Full oversight: approve/decline, KYC review, collections management</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="py-16 max-w-3xl mx-auto px-4">
+  <h2 class="text-2xl font-bold text-center text-primary mb-8">Frequently Asked Questions</h2>
+  <div class="space-y-4">
+    <div class="bg-white rounded-xl p-4 shadow"><h4 class="font-semibold">How much can I borrow?</h4><p class="text-sm text-gray-500 mt-1">Up to $50,000 based on your credit profile and income.</p></div>
+    <div class="bg-white rounded-xl p-4 shadow"><h4 class="font-semibold">What credit score do I need?</h4><p class="text-sm text-gray-500 mt-1">We consider applicants across all credit ranges. Lower scores may qualify at higher APRs.</p></div>
+    <div class="bg-white rounded-xl p-4 shadow"><h4 class="font-semibold">How fast will I receive funds?</h4><p class="text-sm text-gray-500 mt-1">Within 24 hours of accepting your offer and completing verification.</p></div>
+    <div class="bg-white rounded-xl p-4 shadow"><h4 class="font-semibold">Is my data secure?</h4><p class="text-sm text-gray-500 mt-1">Yes. All data is encrypted and we never share your information with third parties.</p></div>
+  </div>
+</section>
+
+<footer class="bg-primary text-white py-8">
+  <div class="max-w-6xl mx-auto px-4 text-center text-sm text-blue-200">
+    <p class="mb-2"><i class="fas fa-leaf mr-1"></i>PalmFi — AI-Native Lending</p>
+    <a href="/terms" class="hover:text-white">Terms</a> | <a href="/about" class="hover:text-white">About</a>
+  </div>
+</footer>
+</body></html>

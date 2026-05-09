@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Financial Dashboard - PalmFi</title>
+<script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#1a365d',accent:'#2b6cb0',gold:'#d4a017'}}}}</script></head>
+<body class="bg-gray-50 font-sans">
+<nav class="bg-primary text-white px-6 py-4 flex justify-between items-center shadow-lg">
+  <h1 class="text-xl font-bold"><i class="fas fa-chart-line mr-2"></i>PalmFi Finance</h1>
+  <div class="flex items-center space-x-4">
+    <a href="/admin/dashboard" class="text-sm hover:text-gold"><i class="fas fa-tachometer-alt mr-1"></i>Admin</a>
+    <a href="/admin/portfolio" class="text-sm hover:text-gold"><i class="fas fa-chart-pie mr-1"></i>Portfolio</a>
+    <a href="/admin/applications" class="text-sm hover:text-gold"><i class="fas fa-file-alt mr-1"></i>Apps</a>
+    <a href="/admin/borrowers" class="text-sm hover:text-gold"><i class="fas fa-users mr-1"></i>Borrowers</a>
+    <a href="/admin/compliance" class="text-sm hover:text-gold"><i class="fas fa-gavel mr-1"></i>Compliance</a>
+    <a href="/admin/logout" class="bg-red-600 px-3 py-1.5 rounded-lg text-sm hover:bg-red-700">Logout</a>
+  </div>
+</nav>
+<div class="max-w-7xl mx-auto px-4 py-8">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for cat, msg in messages %}
+      <div class="mb-4 p-3 rounded-lg text-sm bg-yellow-100 text-yellow-800">{{ msg }}</div>
+    {% endfor %}{% endif %}
+  {% endwith %}
+
+  <div class="grid md:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white p-4 rounded-xl shadow"><div class="text-xs text-gray-500">Total Originated</div><div class="text-xl font-bold">${{ "{:,.0f}".format(funding.total_originated) }}</div></div>
+    <div class="bg-white p-4 rounded-xl shadow"><div class="text-xs text-gray-500">Outstanding</div><div class="text-xl font-bold">${{ "{:,.0f}".format(funding.total_outstanding) }}</div></div>
+    <div class="bg-white p-4 rounded-xl shadow"><div class="text-xs text-gray-500">Pool Utilization</div><div class="text-xl font-bold">{{ funding.pool_utilization_pct }}%</div></div>
+    <div class="bg-white p-4 rounded-xl shadow"><div class="text-xs text-gray-500">Available Capital</div><div class="text-xl font-bold text-green-600">${{ "{:,.0f}".format(funding.available_capital) }}</div></div>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl shadow">
+      <h2 class="font-semibold mb-3"><i class="fas fa-chart-pie mr-1 text-accent"></i>Portfolio Health</h2>
+      <div class="text-sm space-y-2">
+        <p>Active: <strong>{{ portfolio.active_loans }}</strong> | Paid: <strong>{{ portfolio.paid_off_loans }}</strong> | Charged Off: <strong>{{ portfolio.charged_off_loans }}</strong></p>
+        <p>Delinquency Rate: <strong class="text-red-600">{{ portfolio.delinquency_rate_pct }}%</strong></p>
+        <p>Avg APR: <strong>{{ portfolio.avg_apr_pct }}%</strong></p>
+        <p>On-Time Payments: <strong class="text-green-600">{{ portfolio.on_time_payment_rate_pct }}%</strong></p>
+        <p>Avg Loan: <strong>${{ "{:,.0f}".format(portfolio.avg_loan_size) }}</strong></p>
+      </div>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow">
+      <h2 class="font-semibold mb-3"><i class="fas fa-shield-alt mr-1 text-gold"></i>Loan Loss Reserve (CECL)</h2>
+      <div class="text-sm space-y-2">
+        <p>Reserve Needed: <strong>${{ "{:,.2f}".format(cecl.total_reserve_needed) }}</strong></p>
+        <p>Reserve Ratio: <strong>{{ cecl.reserve_ratio_pct }}%</strong></p>
+        <p>Allocated: <strong>${{ "{:,.2f}".format(reserve.allocated_dollars) }}</strong></p>
+        <p>Net Reserve: <strong>${{ "{:,.2f}".format(reserve.net_reserve_dollars) }}</strong></p>
+      </div>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow">
+      <h2 class="font-semibold mb-3"><i class="fas fa-dollar-sign mr-1 text-green-600"></i>P&amp;L (YTD)</h2>
+      <div class="text-sm space-y-2">
+        <p>Interest Income: <strong>${{ "{:,.2f}".format(pnl.income.interest_income) }}</strong></p>
+        <p>Fee Income: <strong>${{ "{:,.2f}".format(pnl.income.fee_income) }}</strong></p>
+        <p>Late Fee Income: <strong>${{ "{:,.2f}".format(pnl.income.late_fee_income) }}</strong></p>
+        <p>Charge-Off Loss: <strong class="text-red-600">${{ "{:,.2f}".format(pnl.expenses.charge_off_losses) }}</strong></p>
+        <p>Net Income: <strong class="{{ 'text-green-600' if pnl.net_income >= 0 else 'text-red-600' }}">${{ "{:,.2f}".format(pnl.net_income) }}</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-lg p-6">
+    <h2 class="font-semibold text-gray-700 mb-4"><i class="fas fa-database mr-1 text-accent"></i>Capital Pools</h2>
+    <p class="text-sm text-gray-500">Total Capital: <strong>${{ "{:,.0f}".format(funding.total_capital) }}</strong> | Available: ${{ "{:,.0f}".format(funding.available_capital) }} | Committed: ${{ "{:,.0f}".format(funding.committed_capital) }} | Pools: {{ funding.capital_pools }}</p>
+  </div>
+</div>
+</body></html>
