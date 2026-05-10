@@ -112,8 +112,8 @@ E2E test suite using curl against the running server: register borrower, login, 
 Create a `launch/` directory with:
 - Interactive HTML checklist (clickable items with counters) covering all tasks across 4 phases
 - LLC operating agreement template
-- Compliance business plan for Texas OCCC license application (11 sections: executive summary, company overview, management, underwriting methodology, compliance program — TILA/GLBA/BSA/AML/ECOA/UDAAP, collections policy, consumer protection, recordkeeping, business continuity, financial projections)
-- Plain-language loan contract compliant with Texas Finance Code Chapter 342 + TAC Chapter 90 (10 sections with TILA table, payment schedule, prepayment terms, default/collections, borrower rights, signatures)
+- Compliance business plan for Virginia SCC BFI license application (11 sections: executive summary, company overview, management, underwriting methodology, compliance program — TILA/GLBA/BSA/AML/ECOA/UDAAP, collections policy, consumer protection, recordkeeping, business continuity, financial projections)
+- Plain-language loan contract compliant with Virginia Consumer Finance Act (Title 6.2, Chapter 18) + SCC BFI regulations (10 sections with TILA table, payment schedule, prepayment terms, default/collections, borrower rights, signatures)
 - 14-slide investor pitch deck .pptx (dark theme, emerald-600 accent)
 - Private placement memo draft
 - Surety bond procurement guide

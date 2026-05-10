@@ -34,7 +34,7 @@ might be a fit.
 
 Quick snapshot of PalmFi:
 • Personal loans, $1k–$25k, 12–60 month terms
-• Proprietary underwriting model (AUC 0.71) using credit + cash-flow signals
+- **Proprietary underwriting model (AUC 0.67) trained on 110K real LendingClub loan records**
 • Full TILA/ECOA/UDAAP-compliant disclosure stack already built
 • Year-1 target: 500 loans · $4M originated · 8% net charge-off ceiling
 • Founded in Virginia · entity formation in progress

@@ -60,7 +60,7 @@
 - **Status:** MVP complete, seeking launch capital
 
 ## Slide 9: Go-to-Market Plan
-1. **Phase 1 (Month 1-3):** Texas license → 10 pilot loans → prove unit economics
+1. **Phase 1 (Month 1-3):** Virginia license → 10 pilot loans → prove unit economics
 2. **Phase 2 (Month 4-6):** 50 loans → $100k portfolio → refine underwriting
 3. **Phase 3 (Month 7-12):** Scale to 200+ loans → multi-state → raise debt facility
 
@@ -88,7 +88,7 @@
 ## Slide 13: Roadmap
 - [ ] LLC formation (done)
 - [ ] Live Stripe integration (in progress)
-- [ ] Texas lending license (6-8 weeks)
+- [ ] Virginia lending license (6-8 weeks)
 - [ ] First 10 pilot loans funded
 - [ ] Performance data collected
 - [ ] Multi-state expansion

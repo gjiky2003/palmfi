@@ -5,7 +5,7 @@
 ngrok is fine for the first 10-50 pilot loans. Your permanent domain `palm.ngrok.app`
 already has auto-HTTPS. Zero setup cost, zero maintenance.
 
-**When to upgrade:** Once you have your Texas license and are ready for
+**When to upgrade:** Once you have your Virginia license and are ready for
 non-friend/family borrowers.
 
 ## Option 2: Custom Domain on DigitalOcean / VPS (Cheapest)

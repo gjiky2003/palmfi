@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Under Review - PalmFi</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:"#1a365d",accent:"#059669"}}}}</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+<nav class="bg-primary text-white shadow-lg">
+<div class="max-w-7xl mx-auto px-4"><div class="flex justify-between h-16 items-center">
+<a href="/" class="text-2xl font-bold"><i class="fas fa-bolt mr-2 text-accent"></i>PalmFi</a>
+<div class="flex items-center space-x-4">
+<a href="/dashboard" class="hover:text-accent transition">Dashboard</a>
+<a href="/logout" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm">Logout</a>
+</div></div></div></nav>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}{% for cat,msg in messages %}
+<div class="max-w-7xl mx-auto px-4 mt-4"><div class="p-4 rounded-lg text-sm font-medium {{ 'bg-green-100 text-green-800' if cat=='success' else 'bg-red-100 text-red-800' if cat=='error' else 'bg-blue-100 text-blue-800' }}">{{ msg }}</div></div>
+{% endfor %}{% endif %}{% endwith %}
+
+<div class="max-w-2xl mx-auto px-4 py-12">
+  <div class="text-center mb-10">
+    <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="fas fa-clipboard-check text-3xl text-blue-600"></i>
+    </div>
+    <h1 class="text-4xl font-bold text-primary">Your Application is Under Review</h1>
+    <p class="text-gray-500 mt-2 max-w-lg mx-auto">A member of our team is reviewing your application. We'll notify you as soon as a decision has been made.</p>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
+    <h2 class="text-xl font-semibold mb-4">What Happens Next</h2>
+    <div class="space-y-4">
+      <div class="flex items-start gap-3">
+        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+          <i class="fas fa-search text-sm text-blue-600"></i>
+        </div>
+        <div>
+          <h3 class="font-semibold">Step 1: Detailed Review</h3>
+          <p class="text-sm text-gray-500">Our team reviews your credit profile, cash flow data, and application details.</p>
+        </div>
+      </div>
+      <div class="flex items-start gap-3">
+        <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+          <i class="fas fa-clipboard-list text-sm text-yellow-600"></i>
+        </div>
+        <div>
+          <h3 class="font-semibold">Step 2: Additional Info (If Needed)</h3>
+          <p class="text-sm text-gray-500">We may reach out if we need additional documents to support your application.</p>
+        </div>
+      </div>
+      <div class="flex items-start gap-3">
+        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+          <i class="fas fa-check text-sm text-green-600"></i>
+        </div>
+        <div>
+          <h3 class="font-semibold">Step 3: Decision</h3>
+          <p class="text-sm text-gray-500">You'll receive an email with our final decision, typically within 24-48 hours.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-xl p-8">
+    <h2 class="text-lg font-semibold mb-4">Application Summary</h2>
+    <div class="grid grid-cols-2 gap-4 text-sm">
+      <div><span class="text-gray-500">Loan Amount</span><br><span class="font-semibold">${{ "{:,.0f}".format(data.loan_amount|float) }}</span></div>
+      <div><span class="text-gray-500">Risk Score</span><br><span class="font-semibold">{{ data.risk_score }}/100</span></div>
+      <div><span class="text-gray-500">Credit Score</span><br><span class="font-semibold">{{ data.fico_score or 'N/A' }}</span></div>
+      <div><span class="text-gray-500">Status</span><br><span class="font-semibold text-blue-600">Pending Review</span></div>
+    </div>
+
+    {% if suppressions %}
+    <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+      <h3 class="font-semibold text-yellow-800 text-sm mb-2"><i class="fas fa-flag mr-1"></i>Why Manual Review?</h3>
+      <ul class="text-sm text-yellow-700 space-y-1">
+        {% for s in suppressions %}
+        <li><i class="fas fa-info-circle mr-1"></i>{{ s.reason }}</li>
+        {% endfor %}
+      </ul>
+      <p class="text-xs text-gray-500 mt-2">These flags require human review. This is standard practice and does not mean your application will be declined.</p>
+    </div>
+    {% endif %}
+
+    <div class="mt-6 text-center">
+      <a href="/dashboard" class="text-accent hover:text-green-700 text-sm font-semibold">
+        <i class="fas fa-arrow-left mr-1"></i>Back to Dashboard
+      </a>
+    </div>
+  </div>
+</div>
+
+<footer class="bg-gray-100 py-8 mt-12"><div class="text-center text-gray-500 text-sm"><p>&copy; 2026 PalmFi</p></div></footer>
+</body>
+</html>

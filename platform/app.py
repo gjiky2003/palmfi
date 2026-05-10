@@ -355,63 +355,102 @@ def apply(user):
         return render_template('apply.html', data={**app_data, 'user_email': row['email'] if row else ''}, step='review')
 
     if 'submit' in request.form:
-        # ── Derive ML inputs from form ──
-        dob = app_data.get('date_of_birth', '')
-        age = 35
-        if dob:
-            try:
-                b = [int(x) for x in dob.split('-')]
-                today = date.today()
-                age = today.year - b[0] - ((today.month, today.day) < (b[1], b[2]))
-            except:
-                pass
+        # ── V2 Two-Stage Credit Application Pipeline ──
+        from credit_application import process_application_two_stage
 
-        annual_income = float(app_data.get('annual_income', 50000))
-        monthly_debt = float(app_data.get('monthly_debt', 0))
-        dti_ratio = min(0.9, (monthly_debt * 12) / max(1, annual_income))
-
-        # Credit score — fall back from bucket or default
-        credit_score = int(app_data.get('credit_score_bucket', 680))
-
-        # Employment length in years
-        emp_months = int(app_data.get('employment_length_months', 0))
-        employment_length = max(0.5, emp_months / 12)
-
-        # Utilization bucket
-        util_map = {'0.1': 0.08, '0.25': 0.20, '0.45': 0.40, '0.65': 0.60, '0.85': 0.80}
-        utilization = util_map.get(app_data.get('utilization', '0.25'), 0.25)
-
-        num_derogatory = int(app_data.get('num_derogatory', 0))
-        num_credit_lines = int(app_data.get('num_credit_lines', 5))
-
-        home_ownership = app_data.get('home_ownership', 'rent')
-        loan_amount = float(app_data.get('loan_amount', 5000))
-        loan_purpose = app_data.get('loan_purpose', 'personal')
-
-        scorer_input = {
-            'age': age,
-            'annual_income': annual_income,
-            'employment_length': employment_length,
-            'credit_score': credit_score,
-            'dti_ratio': dti_ratio,
-            'utilization': utilization,
-            'num_derogatory': num_derogatory,
-            'num_credit_lines': num_credit_lines,
-            'home_ownership': home_ownership,
-            'loan_amount': loan_amount,
-            'loan_purpose': loan_purpose,
+        # Build form data dict matching what credit_application expects
+        credit_form = {
+            'ssn': app_data.get('ssn', ''),
+            'date_of_birth': app_data.get('date_of_birth', ''),
+            'first_name': app_data.get('first_name', ''),
+            'last_name': app_data.get('last_name', ''),
+            'annual_income': app_data.get('annual_income', '50000'),
+            'loan_amount': app_data.get('loan_amount', '5000'),
+            'loan_purpose': app_data.get('loan_purpose', 'personal'),
+            'home_ownership': app_data.get('home_ownership', 'rent'),
+            'employment_length_months': app_data.get('employment_length_months', '0'),
+            'employment_status': app_data.get('employment_status', 'full-time'),
+            'term_months': app_data.get('term_months', '36'),
+            'plaid_public_token': app_data.get('plaid_public_token', ''),
         }
 
+        for k in ('address', 'city', 'state', 'zip_code'):
+            if app_data.get(k):
+                credit_form[k] = app_data[k]
+
+        # Run the V2 two-stage pipeline
+        pipeline_result = process_application_two_stage(credit_form)
+
+        if pipeline_result.get('errors'):
+            for err in pipeline_result['errors']:
+                flash(err, 'error')
+            return render_template('apply.html', data=app_data, step='review')
+
+        # Extract base score result
+        score_result = {
+            'risk_score': pipeline_result.get('risk_score', 50),
+            'risk_tier': pipeline_result.get('risk_tier', 'E'),
+            'risk_label': pipeline_result.get('risk_label', 'Unknown'),
+            'approved': pipeline_result.get('approved', False),
+            'interest_rate': pipeline_result.get('interest_rate', 0),
+            'monthly_payment': pipeline_result.get('monthly_payment', 0),
+            'origination_fee': pipeline_result.get('origination_fee', 0),
+            'max_loan_amount': pipeline_result.get('max_loan_amount', 5000),
+            'explanation': pipeline_result.get('explanation', {}),
+            'scoring_method': pipeline_result.get('scoring_method', 'v2_xgb'),
+            'fico_score': pipeline_result.get('fico_score', 0),
+            'two_stage': pipeline_result.get('two_stage', False),
+            'zone': pipeline_result.get('zone', 'auto_approve'),
+            'second_look_message': pipeline_result.get('second_look_message'),
+            'adverse_reasons': pipeline_result.get('adverse_reasons', []),
+            'hard_cut_blocked': pipeline_result.get('hard_cut_blocked', False),
+            'hard_cut_reasons': pipeline_result.get('hard_cut_reasons', []),
+            'needs_manual_review': pipeline_result.get('needs_manual_review', False),
+            'gating_result': pipeline_result.get('gating_result', {}),
+        }
+
+        # Hard cut — decline immediately, show reasons
+        if pipeline_result.get('hard_cut_blocked'):
+            errors = pipeline_result.get('hard_cut_reasons', ['Application declined.'])
+            for err in errors:
+                flash(err, 'error')
+            score_result['scoring_method'] = 'v2_hard_cut'
+            score_result['approved'] = False
+            db2 = get_db()
+            c = db2.execute(
+                "INSERT INTO applications (borrower_id, loan_amount, loan_purpose, term_months, status) VALUES (?, ?, ?, ?, 'declined')",
+                (bid, float(app_data.get('loan_amount', 5000)), app_data.get('loan_purpose', 'personal'), int(app_data.get('term_months', 36)))
+            )
+            app_id = c.lastrowid
+            db2.execute("UPDATE applications SET risk_score=99, risk_tier='E', decision_explanation=?, decided_at=datetime('now') WHERE id=?",
+                        (json.dumps({'hard_cuts': errors}), app_id))
+            db2.commit()
+            db2.close()
+            score_result['application_id'] = app_id
+            session.pop('app_data', None)
+            return render_template('decision.html', result=score_result)
+
+        bureau_report = pipeline_result.get('credit_report', {})
+        cash_flow_data = pipeline_result.get('cash_flow_data') or pipeline_result.get('cash_flow_metrics')
+
         # ── Save to DB ──
+        dob = app_data.get('date_of_birth', '')
+        annual_income = float(app_data.get('annual_income', 50000))
+        loan_amount = float(app_data.get('loan_amount', 5000))
+        emp_months = int(app_data.get('employment_length_months', 0))
+        home_ownership = app_data.get('home_ownership', 'rent')
+        loan_purpose = app_data.get('loan_purpose', 'personal')
+        ssn_full = app_data.get('ssn', '')
+        ssn_last4 = ssn_full[-4:] if len(ssn_full) >= 4 else ''
+
         db = get_db()
         c = db.execute(
-            "INSERT INTO applications (borrower_id, loan_amount, loan_purpose, term_months, bank_routing, bank_account, status) VALUES (?, ?, ?, ?, ?, ?, 'submitted')",
-            (bid, loan_amount, loan_purpose, int(app_data.get('term_months', 36)),
-             app_data.get('bank_routing',''), app_data.get('bank_account',''))
+            "INSERT INTO applications (borrower_id, loan_amount, loan_purpose, term_months, status) VALUES (?, ?, ?, ?, 'submitted')",
+            (bid, loan_amount, loan_purpose, int(app_data.get('term_months', 36)))
         )
         app_id = c.lastrowid
 
-        # Update borrower profile with new fields
+        # Update borrower profile
         db.execute("""
             UPDATE borrowers SET
                 first_name=?, last_name=?, phone=?, date_of_birth=?,
@@ -422,75 +461,92 @@ def apply(user):
             WHERE id=?""",
             (app_data.get('first_name',''), app_data.get('last_name',''),
              app_data.get('phone',''), dob,
-             app_data.get('ssn_last4',''), app_data.get('address',''),
+             ssn_last4, app_data.get('address',''),
              app_data.get('city',''), app_data.get('state',''),
              app_data.get('zip_code',''), home_ownership,
              app_data.get('employment_status','employed'),
              app_data.get('employer_name',''), app_data.get('employer_phone',''),
              emp_months, float(app_data.get('housing_payment',0)),
-             annual_income, credit_score, bid)
+             annual_income, bureau_report.get('fico_score', 0) or int(app_data.get('credit_score_bucket', 680)),
+             bid)
         )
-        db.commit()
 
-        # ── Score ──
-        scorer = get_scorer()
-        score_result = None
-        if scorer and scorer.model_loaded:
-            try:
-                # Inject cash flow data if available
-                db_cf = get_db()
-                cf_row = db_cf.execute("SELECT cash_flow_data FROM borrowers WHERE id=?", (bid,)).fetchone()
-                if cf_row and cf_row['cash_flow_data'] and cf_row['cash_flow_data'] != '{}':
-                    try:
-                        cf_data = json.loads(cf_row['cash_flow_data'])
-                        scorer_input['cash_flow_metrics'] = cf_data
-                    except:
-                        pass
-                db_cf.close()
-                score_result = scorer.score_application(scorer_input)
-            except Exception as e:
-                log.error("Scoring error: %s", e)
+        # Save bureau report as JSON
+        if bureau_report:
+            db.execute("UPDATE borrowers SET bureau_data=? WHERE id=?",
+                       (json.dumps(bureau_report), bid))
 
-        if score_result and 'risk_score' in score_result:
-            # ── Generate adverse action reasons for declined loans ──
-            if not score_result.get('approved', True):
-                try:
-                    from compliance.adverse_action import generate_reasons, format_adverse_action_notice
-                    adv_reasons = generate_reasons(scorer_input, score_result.get('risk_score', 50), False)
-                    score_result['adverse_action_reasons'] = adv_reasons
-                    # Get borrower name for the notice
-                    bname = f"{app_data.get('first_name','')} {app_data.get('last_name','')}".strip() or 'Valued Applicant'
-                    score_result['adverse_action_notice'] = format_adverse_action_notice(bname, adv_reasons)
-                except Exception as e:
-                    log.error("Failed to generate adverse action: %s", e)
+        # Save cash flow data
+        if cash_flow_data:
+            db.execute("UPDATE borrowers SET cash_flow_data=?, cash_flow_score=? WHERE id=?",
+                       (json.dumps(cash_flow_data), cash_flow_data.get('cash_flow_score', 0), bid))
+
+        # ── Update application with decision ──
+        zone = score_result.get('zone', 'auto_approve')
+        is_two_stage = score_result.get('two_stage', False)
+
+        if score_result.get('approved'):
+            status = 'approved'
             db.execute(
                 "UPDATE applications SET risk_score=?, risk_tier=?, interest_rate=?, monthly_payment=?, origination_fee=?, decision_explanation=?, status=?, decided_at=datetime('now') WHERE id=?",
-                (score_result['risk_score'], score_result['risk_tier'], score_result['interest_rate'], score_result['monthly_payment'], score_result['origination_fee'], json.dumps(score_result.get('explanation',{})), 'approved' if score_result['approved'] else 'declined', app_id)
+                (score_result['risk_score'], score_result['risk_tier'],
+                 score_result['interest_rate'], score_result['monthly_payment'],
+                 score_result['origination_fee'],
+                 json.dumps(score_result.get('explanation',{})),
+                 status, app_id)
             )
-            score_result['application_id'] = app_id
-            score_result['loan_amount'] = loan_amount
+        elif is_two_stage and zone != 'auto_approve':
+            # Save as pending reconsideration — store stage-1 data for second look
+            db.execute(
+                "UPDATE applications SET status=?, risk_score=?, risk_tier=?, decision_explanation=?, decided_at=datetime('now') WHERE id=?",
+                ('pending_reconsideration', score_result['risk_score'], score_result['risk_tier'],
+                 json.dumps(score_result.get('explanation',{})), app_id)
+            )
         else:
-            # Fallback with conservative scoring
-            score_result = {
-                'risk_score': 30, 'risk_tier': 'B', 'risk_label': 'Good', 'approved': True,
-                'interest_rate': 12.99, 'monthly_payment': round(loan_amount * 0.033, 2),
-                'origination_fee': round(loan_amount * 0.03, 2),
-                'max_loan_amount': min(25000, int(loan_amount * 1.2)),
-                'recommended_term_months': int(app_data.get('term_months', 36)),
-                'probability_of_default': 0.12,
-                'explanation': {'summary': 'Application received. Our AI reviewed your financial profile.', 'top_factors': [
-                    {'factor': 'debt_to_income_ratio', 'impact': 'positive', 'description': 'Your DTI ratio is manageable'},
-                    {'factor': 'credit_history', 'impact': 'positive', 'description': 'Stable credit profile'},
-                ]},
-                'application_id': app_id,
-                'loan_amount': loan_amount,
-            }
-            db.execute("UPDATE applications SET status='submitted', risk_score=?, risk_tier=? WHERE id=?",
-                       (score_result['risk_score'], score_result['risk_tier'], app_id))
+            db.execute(
+                "UPDATE applications SET status=?, risk_score=?, risk_tier=?, decision_explanation=?, decided_at=datetime('now') WHERE id=?",
+                ('declined', score_result['risk_score'], score_result['risk_tier'],
+                 json.dumps(score_result.get('explanation',{})), app_id)
+            )
+
+        # Generate adverse action reasons for declined loans
+        if not score_result.get('approved', True):
+            try:
+                from compliance.adverse_action import generate_reasons, format_adverse_action_notice
+                adv_reasons = generate_reasons(score_result, score_result.get('risk_score', 50), False)
+                score_result['adverse_action_reasons'] = adv_reasons
+                bname = f"{app_data.get('first_name','')} {app_data.get('last_name','')}".strip() or 'Valued Applicant'
+                score_result['adverse_action_notice'] = format_adverse_action_notice(bname, adv_reasons)
+            except Exception as e:
+                log.error("Failed to generate adverse action: %s", e)
+
         db.commit()
         db.close()
+
+        score_result['application_id'] = app_id
+        score_result['loan_amount'] = loan_amount
         audit_log('application_submitted', bid, 'system', {'app_id': app_id, 'decision': score_result.get('approved', True)})
         session.pop('app_data', None)
+
+        # Redirect non-auto-approved to second-look page
+        if is_two_stage and zone not in ('auto_approve',) and not score_result.get('approved'):
+            session['second_look_data'] = {
+                'application_id': app_id,
+                'borrower_id': bid,
+                'risk_score': score_result['risk_score'],
+                'zone': zone,
+                'message': score_result.get('second_look_message', ''),
+                'fico_score': score_result.get('fico_score', 0),
+                'loan_amount': loan_amount,
+            }
+            if score_result.get('needs_manual_review'):
+                # Suppression flagged — queue for manual review instead
+                session['second_look_data']['manual_review'] = True
+                session['second_look_data']['gating'] = score_result.get('gating_result', {})
+                flash('Your application has been flagged for additional review by our team.', 'info')
+                return redirect(url_for('manual_review'))
+            return redirect(url_for('second_look'))
+
         return render_template('decision.html', result=score_result)
 
     elif 'step' in request.form:
@@ -505,6 +561,230 @@ def apply(user):
         return render_template('apply.html', data=app_data, step=step)
 
     return render_template('apply.html', data={}, step=1)
+
+
+# ── Manual Review Queue ──
+
+@app.route('/manual-review', methods=['GET'])
+@login_required
+def manual_review(user):
+    """Borrower-facing: application is under manual review."""
+    data = session.get('second_look_data', {})
+    if not data:
+        flash('No pending review found.', 'warning')
+        return redirect(url_for('dashboard'))
+
+    if not data.get('manual_review'):
+        # Not actually manual review — redirect to second look
+        return redirect(url_for('second_look'))
+
+    gating = data.get('gating', {})
+    suppressions = [s for s in gating.get('suppressions', []) if s.get('flagged')]
+
+    return render_template('manual_review.html', data=data, suppressions=suppressions)
+
+
+@app.route('/admin/manual-review', methods=['GET'])
+@login_required
+@admin_required
+def admin_manual_review(admin):
+    """Admin: view manual review queue with LLM assistant suggestions."""
+    db = get_db()
+    pending = db.execute(
+        "SELECT a.id, a.borrower_id, a.loan_amount, a.status, a.risk_score, "
+        "a.decision_explanation, a.created_at, "
+        "b.first_name, b.last_name, b.email, b.credit_score, "
+        "b.cash_flow_score, b.bureau_data "
+        "FROM applications a JOIN borrowers b ON a.borrower_id = b.id "
+        "WHERE a.status = 'pending_reconsideration' "
+        "ORDER BY a.created_at DESC LIMIT 20"
+    ).fetchall()
+    db.close()
+
+    # Generate LLM review suggestions for each pending app
+    reviews = []
+    for row in pending:
+        try:
+            from manual_review_assistant import ManualReviewAssistant
+            assistant = ManualReviewAssistant()
+            # Build mock profile based on available data
+            exp_raw = row.get('decision_explanation', '{}')
+            explanation = json.loads(exp_raw) if isinstance(exp_raw, str) else {}
+            app_data = {
+                'first_name': row['first_name'],
+                'last_name': row['last_name'],
+                'credit_score': row['credit_score'] or 680,
+                'loan_amount': row['loan_amount'],
+                'annual_income': 50000,
+                'employment_length': 2,
+                'dti_ratio': 0.30,
+                'utilization': 0.40,
+                'home_ownership': 'rent',
+                'loan_purpose': 'personal',
+            }
+            review_input = {
+                'app_data': app_data,
+                'bureau_data': json.loads(row['bureau_data']) if row.get('bureau_data') and row['bureau_data'] != '{}' else None,
+                'cash_flow_metrics': {'cash_flow_score': row.get('cash_flow_score', 50)} if row.get('cash_flow_score') else None,
+                'model_result': {'risk_score': row.get('risk_score', 50), 'risk_tier': 'C', 'probability_of_default': row.get('risk_score', 50) / 100},
+                'zones': {'original_zone': 'consideration', 'reconsideration_zone': None},
+                'gating_results': {'hard_cut_blocked': False, 'suppression_flagged': True, 'suppressions': [], 'soft_override_applies': False},
+            }
+            review_output = assistant.review(review_input)
+            summary = assistant.summarize_for_human(review_output)
+            reviews.append({'app': dict(row), 'review': review_output, 'summary': summary})
+        except Exception as e:
+            log.error(f'LLM review failed for app {row["id"]}: {e}')
+            reviews.append({'app': dict(row), 'review': None, 'summary': 'Review unavailable'})
+
+    return render_template('admin_manual_review.html', reviews=reviews)
+
+
+@app.route('/admin/manual-review/<int:app_id>/decide', methods=['POST'])
+@login_required
+@admin_required
+def admin_manual_review_decide(admin):
+    """Admin makes a decision on a manual review case."""
+    app_id = request.form.get('app_id')
+    decision = request.form.get('decision', 'decline')
+    notes = request.form.get('notes', '')
+
+    db = get_db()
+    status = 'approved' if decision == 'approve' else 'declined'
+    db.execute(
+        "UPDATE applications SET status=?, decision_explanation=json_set(COALESCE(decision_explanation,'{}'),'$.admin_notes',?), decided_at=datetime('now') WHERE id=?",
+        (status, notes, app_id)
+    )
+    db.commit()
+    db.close()
+    flash(f'Application #{app_id} marked as {status}.', 'success')
+    return redirect(url_for('admin_manual_review'))
+
+
+# ── Second Look (Two-Stage Reconsideration) ──
+
+@app.route('/second-look', methods=['GET'])
+@login_required
+def second_look(user):
+    """Second look page for applicants who didn't auto-approve."""
+    data = session.get('second_look_data', {})
+    if not data:
+        flash('No pending reconsideration found.', 'warning')
+        return redirect(url_for('dashboard'))
+
+    return render_template('second_look.html', data=data)
+
+
+@app.route('/second-look/connect', methods=['POST'])
+@login_required
+def second_look_connect(user):
+    """Process Plaid link from second-look page and run reconsideration."""
+    data = session.get('second_look_data', {})
+    if not data:
+        flash('Session expired. Please re-apply.', 'error')
+        return redirect(url_for('apply'))
+
+    app_id = data.get('application_id')
+    bid = data.get('borrower_id')
+    plaid_token = request.form.get('plaid_public_token', '')
+
+    if not plaid_token:
+        flash('Please connect your bank account.', 'error')
+        return redirect(url_for('second_look'))
+
+    try:
+        # Exchange Plaid token for access token & fetch transactions
+        from plaid_integration import exchange_public_token, get_transactions
+        token_result = exchange_public_token(plaid_token)
+        access_token = token_result.get('access_token', '')
+
+        if not access_token:
+            flash('Could not link bank account. Please try again.', 'error')
+            return redirect(url_for('second_look'))
+
+        # Fetch transactions & analyze cash flow
+        txn_result = get_transactions(access_token, 90)
+        transactions = txn_result.get('transactions', [])
+
+        from cash_flow_analyzer import CashFlowAnalyzer as LegacyCFA
+        import importlib
+        underwriting_dir = os.path.join(os.path.dirname(__file__), '..', 'underwriting')
+        sys.path.insert(0, underwriting_dir)
+        from cash_flow import CashFlowAnalyzer
+        analyzer = CashFlowAnalyzer()
+        cash_flow_metrics = analyzer.analyze(transactions)
+        cf_score = cash_flow_metrics.get('cash_flow_score', 50)
+
+        # Run reconsideration
+        from reconsideration_engine import ReconsiderationEngine
+        recon = ReconsiderationEngine()
+        original_score = data.get('risk_score', 50)
+        zone = data.get('zone', 'decline')
+        cf_risk = max(0, min(100, 100 - cf_score))
+
+        recon_result = recon.reconsider(original_score, cf_risk, zone)
+
+        # Get SHAP adverse action if still declined
+        adverse_reasons = []
+        shap_notice = None
+        if not recon_result.get('approved'):
+            try:
+                from xgb_scorer import XGBoostScorer
+                scorer = XGBoostScorer()
+                scorer.load()
+                from shap_adverse_action import ShapAdverseAction
+                shap_engine = ShapAdverseAction(scorer.feature_names)
+                apps = {'credit_score': data.get('fico_score', 680)}
+                sv = scorer.get_shap_values(apps)
+                adverse_reasons = shap_engine.generate(sv, apps, recon_result['blended_score'], False)
+                if adverse_reasons:
+                    from shap_adverse_action import generate_adverse_action_notice
+                    bname = f"{user.get('first_name','')} {user.get('last_name','')}".strip() or 'Valued Applicant'
+                    shap_notice = generate_adverse_action_notice(bname, adverse_reasons, apps.get('credit_score', 0))
+            except Exception as e:
+                log.error('SHAP adverse action on reconsideration: %s', e)
+
+        # Save cash flow data to borrower
+        db2 = get_db()
+        db2.execute("UPDATE borrowers SET cash_flow_data=?, cash_flow_score=? WHERE id=?",
+                    (json.dumps(cash_flow_metrics), cf_score, bid))
+
+        # Update application status
+        if recon_result.get('approved'):
+            db2.execute(
+                "UPDATE applications SET status='approved', risk_score=?, scoring_method='v2_reconsideration', decided_at=datetime('now') WHERE id=?",
+                (recon_result['blended_score'], app_id)
+            )
+        else:
+            db2.execute(
+                "UPDATE applications SET status='declined', risk_score=?, scoring_method='v2_reconsideration', decision_explanation=?, decided_at=datetime('now') WHERE id=?",
+                (recon_result['blended_score'], json.dumps(adverse_reasons), app_id)
+            )
+        db2.commit()
+        db2.close()
+
+        # Build result
+        final_result = {
+            'approved': recon_result.get('approved', False),
+            'risk_score': recon_result.get('blended_score', original_score),
+            'risk_tier': 'A' if recon_result.get('blended_score', 50) <= 20 else 'B' if recon_result.get('blended_score', 50) <= 40 else 'C' if recon_result.get('blended_score', 50) <= 60 else 'D' if recon_result.get('blended_score', 50) <= 80 else 'E',
+            'reconsideration': recon_result,
+            'cash_flow_score': cf_score,
+            'friendly_message': 'Congratulations! Your application has been approved after reviewing your cash flow.' if recon_result.get('approved') else 'We were unable to approve your application after reviewing your cash flow.',
+            'adverse_reasons': adverse_reasons,
+            'adverse_action_notice': shap_notice,
+            'zone': zone,
+            'original_score': original_score,
+            'is_reconsideration': True,
+        }
+
+        session.pop('second_look_data', None)
+        return render_template('decision.html', result=final_result)
+
+    except Exception as e:
+        log.error('Reconsideration failed: %s', e)
+        flash(f'Failed to process your bank connection: {str(e)}', 'error')
+        return redirect(url_for('second_look'))
 
 
 # ── Bank Connection (Cash Flow Underwriting) ──
@@ -585,6 +865,76 @@ def connect_bank(user):
     audit_log('bank_connected', bid, 'system', {'profile': profile, 'cf_score': cf.get('cash_flow_score')})
     flash(f'Bank connected! Cash flow score: {cf["cash_flow_score"]}/100', 'success')
     return redirect('/connect-bank')
+
+
+# ── Plaid Link API Endpoints ──
+
+@app.route('/api/plaid/link-token')
+@login_required
+def plaid_link_token(user):
+    """Generate a Plaid Link token for the front-end."""
+    try:
+        from platform.plaid_integration import create_link_token
+    except ImportError:
+        from plaid_integration import create_link_token
+
+    try:
+        result = create_link_token(str(user['id']),
+                                   f"{user.get('first_name','')} {user.get('last_name','')}")
+        return jsonify({
+            'link_token': result['link_token'],
+            'expiration': result.get('expiration', ''),
+        })
+    except Exception as e:
+        log.error('Plaid link token error: %s', e)
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/plaid/exchange', methods=['POST'])
+@login_required
+def plaid_exchange(user):
+    """Exchange a Plaid public token and save transactions."""
+    try:
+        from platform.plaid_integration import exchange_public_token, get_transactions
+    except ImportError:
+        from plaid_integration import exchange_public_token, get_transactions
+
+    data = request.get_json() or {}
+    public_token = data.get('public_token', '')
+
+    if not public_token:
+        return jsonify({'error': 'Missing public_token'}), 400
+
+    try:
+        token_result = exchange_public_token(public_token)
+        access_token = token_result.get('access_token', '')
+
+        # Fetch transactions and analyze cash flow
+        txn_result = get_transactions(access_token, 90)
+        transactions = txn_result.get('transactions', [])
+
+        from underwriting.cash_flow import CashFlowAnalyzer
+        analyzer = CashFlowAnalyzer()
+        cf_metrics = analyzer.analyze(transactions)
+
+        # Save to borrower record
+        bid = user['id']
+        db = get_db()
+        db.execute("UPDATE borrowers SET cash_flow_data=?, cash_flow_score=? WHERE id=?",
+                   (json.dumps(cf_metrics), cf_metrics.get('cash_flow_score', 0), bid))
+        db.commit()
+        db.close()
+
+        return jsonify({
+            'success': True,
+            'access_token': access_token[-8:],  # last 8 chars only
+            'transactions_count': len(transactions),
+            'cash_flow_score': cf_metrics.get('cash_flow_score', 0),
+            'cash_flow_income': cf_metrics.get('cash_flow_income', 0),
+        })
+    except Exception as e:
+        log.error('Plaid exchange error: %s', e)
+        return jsonify({'error': str(e)}), 500
 
 
 # ── Innovation #2: Dynamic Rate Improvement ──
@@ -846,6 +1196,7 @@ def disconnect_bank(user):
 @app.route('/accept-terms', methods=['POST'])
 @login_required
 def accept_terms(user):
+    """Borrower accepts the loan offer. Loan enters 'approved' state, pending admin funding."""
     app_id = request.form.get('application_id', type=int)
     bid = user['id']
     db = get_db()
@@ -855,12 +1206,16 @@ def accept_terms(user):
         flash('Application not found', 'error')
         return redirect('/dashboard')
     a = dict(app_row)
+
+    # Create loan record — status='approved', disbursement_status='pending'
     c = db.execute(
-        "INSERT INTO loans (application_id, borrower_id, principal, interest_rate, term_months, monthly_payment, origination_fee, remaining_balance, status, disbursed_at, next_payment_date) VALUES (?,?,?,?,?,?,?,?,'active',datetime('now'),?)",
+        "INSERT INTO loans (application_id, borrower_id, principal, interest_rate, term_months, monthly_payment, origination_fee, remaining_balance, status, disbursement_status, next_payment_date) VALUES (?,?,?,?,?,?,?,?,'approved','pending',?)",
         (app_id, bid, a['loan_amount'], a['interest_rate'], a['term_months'], a['monthly_payment'], a['origination_fee'], a['loan_amount'], (datetime.now(timezone.utc)+timedelta(days=30)).strftime('%Y-%m-%d'))
     )
     loan_id = c.lastrowid
-    db.execute("UPDATE applications SET status='funded' WHERE id=?", (app_id,))
+    db.execute("UPDATE applications SET status='accepted' WHERE id=?", (app_id,))
+
+    # Generate amortization schedule
     pricing = get_scorer().pricing if get_scorer() else None
     if pricing:
         schedule = pricing.calculate_amortization_schedule(a['loan_amount'], a['interest_rate'], a['term_months'])
@@ -869,9 +1224,86 @@ def accept_terms(user):
                        (loan_id, s['payment_number'], int(s['amount']*100), int(s['principal']*100), int(s['interest']*100), int(s['remaining_balance']*100), s['payment_number']*30))
     db.commit()
     db.close()
-    audit_log('loan_funded', bid, 'system', {'loan_id': loan_id, 'amount': a['loan_amount']})
-    flash('Your loan has been funded!', 'success')
+    audit_log('loan_accepted', bid, 'system', {'loan_id': loan_id, 'amount': a['loan_amount']})
+    flash('Offer accepted! Your loan is pending funding — funds typically arrive in 1-2 business days after admin approval.', 'success')
     return redirect('/dashboard')
+
+
+# ── Admin Loan Funding (Mock ACH Disbursement) ──
+
+@app.route('/admin/fund-loan/<int:loan_id>', methods=['POST'])
+@admin_required
+def admin_fund_loan(admin, loan_id):
+    """Admin triggers mock ACH disbursement. Simulates transferring funds to borrower."""
+    db = get_db()
+    loan = db.execute("SELECT * FROM loans WHERE id=?", (loan_id,)).fetchone()
+    if not loan:
+        db.close()
+        abort(404)
+
+    if loan['status'] != 'approved' or loan['disbursement_status'] != 'pending':
+        db.close()
+        flash(f'Loan #{loan_id} is not pending funding (status={loan["status"]}, disbursement={loan["disbursement_status"]})', 'error')
+        return redirect(f'/admin/loan/{loan_id}')
+
+    # ── Mock ACH Transfer ──
+    amount = float(loan['principal'])
+    routing = '021000021'  # Mock routing (same as plaid mock)
+    account = '****1234'    # Mock account
+
+    # In production, this would call:
+    #   stripe_payments.create_payout(amount, destination_bank)
+    # Or generate an ACH file via Plaid get_auth()
+
+    db.execute("""
+        UPDATE loans SET
+            status='active',
+            disbursement_status='completed',
+            disbursed_at=datetime('now')
+        WHERE id=?
+    """, (loan_id,))
+
+    # Record the disbursement transaction
+    db.execute(
+        "INSERT INTO payments (loan_id, borrower_id, amount_cents, payment_type, status, paid_at) VALUES (?,?,?,'disbursement','completed',datetime('now'))",
+        (loan_id, loan['borrower_id'], int(amount * 100))
+    )
+
+    db.commit()
+    db.close()
+
+    audit_log('loan_funded', loan['borrower_id'], f'admin:{admin["email"]}',
+              {'loan_id': loan_id, 'amount': amount, 'method': 'mock_ach',
+               'routing': routing, 'account': account})
+
+    flash(f'Loan #{loan_id} funded — ${amount:,.0f} disbursed via ACH (mock). Borrower will see funds in 1-2 business days.', 'success')
+    return redirect(f'/admin/loan/{loan_id}')
+
+
+@app.route('/admin/fund-loan/batch', methods=['POST'])
+@admin_required
+def admin_fund_loans_batch(admin):
+    """Batch fund all approved, pending-disbursement loans."""
+    db = get_db()
+    pending = db.execute(
+        "SELECT id FROM loans WHERE status='approved' AND disbursement_status='pending'"
+    ).fetchall()
+    count = 0
+    total = 0
+    for row in pending:
+        lid = row['id']
+        loan = db.execute("SELECT * FROM loans WHERE id=?", (lid,)).fetchone()
+        db.execute("UPDATE loans SET status='active', disbursement_status='completed', disbursed_at=datetime('now') WHERE id=?", (lid,))
+        db.execute("INSERT INTO payments (loan_id, borrower_id, amount_cents, payment_type, status, paid_at) VALUES (?,?,?,'disbursement','completed',datetime('now'))",
+                   (lid, loan['borrower_id'], int(float(loan['principal']) * 100)))
+        count += 1
+        total += float(loan['principal'])
+        audit_log('loan_funded', loan['borrower_id'], f'admin:{admin["email"]}',
+                  {'loan_id': lid, 'amount': float(loan['principal']), 'method': 'batch_mock_ach'})
+    db.commit()
+    db.close()
+    flash(f'Batch funded: {count} loans, ${total:,.0f} total disbursed.', 'success')
+    return redirect('/admin/funding')
 
 
 # ── Dashboard ──
@@ -882,6 +1314,7 @@ def dashboard(user):
     bid = user['id']
     db = get_db()
     active = db.execute("SELECT * FROM loans WHERE borrower_id=? AND status='active' ORDER BY id DESC LIMIT 1", (bid,)).fetchone()
+    pending_loan = db.execute("SELECT * FROM loans WHERE borrower_id=? AND status='approved' AND disbursement_status='pending' ORDER BY id DESC LIMIT 1", (bid,)).fetchone()
     recent = db.execute("SELECT * FROM applications WHERE borrower_id=? ORDER BY created_at DESC LIMIT 5", (bid,)).fetchall()
     schedule = []
     if active:
@@ -896,7 +1329,7 @@ def dashboard(user):
     s = db.execute("SELECT next_payment_date FROM loans WHERE borrower_id=? AND status='active' ORDER BY next_payment_date LIMIT 1", (bid,)).fetchone()
     if s: stats['next_payment_date'] = s['next_payment_date']
     db.close()
-    return render_template('dashboard.html', stats=stats, active_loan=active, schedule=schedule, recent_apps=recent, now=datetime.now(timezone.utc).strftime('%Y-%m-%d'))
+    return render_template('dashboard.html', stats=stats, active_loan=active, pending_loan=pending_loan, schedule=schedule, recent_apps=recent, now=datetime.now(timezone.utc).strftime('%Y-%m-%d'))
 
 
 # ── Admin ──
@@ -1009,6 +1442,10 @@ def admin_funding(admin):
         from compliance.funding_tax import (render_funding_html, get_funding_summary, get_portfolio_metrics, profit_and_loss, calculate_cecl_reserve, get_reserve_summary, init_tables as init_funding_tables)
         init_funding_tables()
         summary = get_funding_summary()
+        # Add pending funding info
+        pending_row = db.execute("SELECT COUNT(*) as c, COALESCE(SUM(principal),0) as t FROM loans WHERE status='approved' AND disbursement_status='pending'").fetchone()
+        summary['pending_count'] = pending_row['c'] if pending_row else 0
+        summary['pending_total'] = float(pending_row['t']) if pending_row and pending_row['t'] else 0
         metrics = get_portfolio_metrics()
         cecl = calculate_cecl_reserve()
         reserve = get_reserve_summary()

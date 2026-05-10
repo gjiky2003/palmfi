@@ -5,18 +5,18 @@
 ---
 
 ## 1. Regulatory Framework
-- 1.1 Texas Finance Code Chapter 342 (Consumer Loans)
-- 1.2 Texas Administrative Code Title 7, Chapters 83 & 90
+- 1.1 Virginia Consumer Finance Act (Title 6.2, Chapter 18)
+- 1.2 Virginia SCC BFI Regulations
 - 1.3 Federal Truth in Lending Act / Regulation Z
 - 1.4 Equal Credit Opportunity Act / Regulation B
 - 1.5 Fair Credit Reporting Act
 - 1.6 Gramm-Leach-Bliley Act / Regulation P (Privacy)
 - 1.7 Fair Debt Collection Practices Act
-- 1.8 Texas Debt Collection Act (TFC Chapter 392)
+- 1.8 Virginia Consumer Protection Act (Va. Code § 59.1-196)
 - 1.9 UDAAP Standards
 - 1.10 Anti-Money Laundering / OFAC
 - 1.11 Electronic Signatures in Global and National Commerce Act (ESIGN)
-- 1.12 Uniform Electronic Transactions Act (Texas UETA)
+- 1.12 Uniform Electronic Transactions Act (Virginia UETA)
 
 ## 2. Lending Operations
 - 2.1 Loan Application Processing
@@ -63,7 +63,7 @@
 ## 7. Complaints
 - 7.1 Complaint Intake Channels (email, web, phone)
 - 7.2 Investigation & Response Timeline
-- 7.3 Escalation to OCCC
+- 7.3 Escalation to Virginia SCC BFI
 - 7.4 Complaint Recordkeeping
 - 7.5 Annual Complaint Reporting
 
@@ -95,10 +95,10 @@
 - C: Sample Privacy Notice
 - D: Sample Debt Validation Letter
 - E: Complaint Form Template
-- F: OCCC Contact Information
+- F: Virginia SCC BFI Contact Information
 - G: Applicable Statute Citations
 - H: Emergency/Continuity Plan
 
 ---
 
-*This compliance manual is based on the Texas OCCC Regulated Lender requirements and federal consumer financial laws. It should be reviewed by qualified legal counsel before adoption. Last updated: May 2026.*
+*This compliance manual is based on the Virginia SCC BFI Consumer Finance License requirements and federal consumer financial laws. It should be reviewed by qualified legal counsel before adoption. Last updated: May 2026.*

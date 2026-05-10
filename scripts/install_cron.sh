@@ -6,11 +6,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-VENV_PYTHON="$PROJECT_DIR/../property-mgmt-ai/.venv/bin/python3"
-
-if [ ! -f "$VENV_PYTHON" ]; then
-    VENV_PYTHON=$(command -v python3 || command -v python)
-fi
+VENV_PYTHON=$(command -v python3 || command -v python)
 
 echo "=== PalmFi Cron Installation ==="
 echo "Project: $PROJECT_DIR"

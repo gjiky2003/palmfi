@@ -4,7 +4,7 @@
 - **Pricing** — cost per verification (lower is better at scale)
 - **API quality** — documentation, integration effort, error handling
 - **Coverage** — supported document types, countries, biometric options
-- **Compliance** — meets OCCC/CISI requirements for identity verification
+- **Compliance** — meets SCC BFI requirements for identity verification
 - **Integration complexity** — lines of code to add to PalmFi
 
 ## Vendor Comparison

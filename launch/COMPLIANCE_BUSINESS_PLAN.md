@@ -1,17 +1,18 @@
 # PalmFi Lending LLC
 # Compliance Business Plan & License Application Narrative
-# For: Texas OCCC Regulated Lender License (Chapter 342, Texas Finance Code)
+# For: Virginia SCC Bureau of Financial Institutions — Consumer Finance License
+# (Title 6.2, Chapter 18, Code of Virginia)
 
 ---
 
 ## 1. Executive Summary
 
-**PalmFi Lending LLC** ("PalmFi") is a Delaware limited liability company applying for a Texas Regulated Lender License under Chapter 342 of the Texas Finance Code. PalmFi operates an AI-native consumer lending platform that makes fully automated personal loans of $500–$50,000 to Texas residents.
+**PalmFi Lending LLC** ("PalmFi") is a Virginia limited liability company applying for a Consumer Finance License under Title 6.2, Chapter 18 of the Code of Virginia (Virginia Consumer Finance Act). PalmFi operates an AI-native consumer lending platform that makes fully automated personal loans of $500–$50,000 to Virginia residents.
 
 **Core proposition:** PalmFi uses a machine learning underwriting ensemble (AUC 0.756) to evaluate borrowers holistically — beyond FICO scores — enabling fair, data-driven credit decisions for mainstream and thin-file borrowers alike. The platform is fully automated: application → scoring → approval/decline → disbursement → collections requires zero human touch.
 
-**Headquarters:** [Your Address]
-**Registered Agent:** [Registered Agent Name, Address]
+**Headquarters:** [Your Virginia Address]
+**Registered Agent:** [Registered Agent Name, Address in Virginia]
 **EIN:** [XX-XXXXXXX]
 **Principal:** [Your Name], [Your Title]
 
@@ -32,7 +33,7 @@ PalmFi originates unsecured personal loans through a direct-to-consumer web plat
 *Income-share loans are an alternative payment option where the borrower pays a percentage of verified monthly income instead of a fixed payment, capped at 150% of the standard amortization.
 
 ### 2.3 Target Market
-- Texas residents aged 18+ with valid SSN/ITIN
+- Virginia residents aged 18+ with valid SSN/ITIN
 - Credit score range: 580–720 (including thin-file borrowers)
 - Employment income: $1,500+/month minimum
 - Primary use cases: Debt consolidation, home improvement, medical expenses, auto repair, education
@@ -95,7 +96,7 @@ All features are selected to be:
 - Periodic statements provided to borrowers with active loans
 
 ### 5.2 Truth in Lending & Plain Language
-- Contracts written in clear, plain English per TAC Chapter 90
+- Contracts written in clear, plain English per Virginia consumer lending regulations
 - Prominent disclosure of rates, fees, and repayment terms
 - No confusing legal jargon in borrower-facing documents
 
@@ -123,7 +124,7 @@ All features are selected to be:
 - All marketing materials accurately represent loan terms
 - No misleading APR comparisons or fee disclosures
 - Clear, simple fee schedules
-- Prepayment penalty: None (as required by TFC §342.252)
+- Prepayment penalty: None (as required by the Virginia Consumer Finance Act)
 
 ---
 
@@ -145,7 +146,7 @@ All features are selected to be:
 - No third-party disclosure of debt
 - No harassment or false representations
 - Debt validation notice provided within 5 days of first contact
-- All communications comply with Texas Debt Collection Act (TFC Ch. 392) and FDCPA
+- All communications comply with Virginia debt collection laws (Title 6.2, Chapter 20) and FDCPA
 
 ### 6.3 Hardship Accommodations
 Borrowers experiencing temporary financial difficulty may request:
@@ -161,8 +162,9 @@ Borrowers experiencing temporary financial difficulty may request:
 - **Dedicated email:** complaints@palmfi.com
 - **Response standard:** Initial acknowledgment within 2 business days; resolution within 15 business days
 - **Recordkeeping:** All complaints logged in CRM with resolution status
-- **Annual reporting:** Complaint summary provided to OCCC upon request
-- **Escalation:** Borrowers directed to Texas OCCC after internal resolution attempt
+- **Annual reporting:** Complaint summary provided to Virginia SCC Bureau of Financial Institutions upon request
+- **Escalation:** Borrowers directed to Virginia SCC Bureau of Financial Institutions after internal resolution attempt
+- **License fee:** $750 annual license fee paid to the SCC Bureau of Financial Institutions
 
 ### 7.2 Dispute Resolution
 Borrowers may dispute any charge or payment by sending written notice to PalmFi. PalmFi will investigate and respond within 30 days. If the dispute involves a billing error, provisions of TILA Section 161 apply.
@@ -220,8 +222,7 @@ Detailed financial statements available upon request.
 
 ## 11. Attachments
 
-- [X] Certificate of Formation (Delaware)
-- [X] Certificate of Foreign Qualification (Texas) — *to be filed*
+- [X] Certificate of Formation (Virginia State Corporation Commission)
 - [X] EIN Confirmation Letter
 - [X] Principal Background Disclosure Form
 - [X] Proposed Loan Contract
@@ -229,10 +230,13 @@ Detailed financial statements available upon request.
 - [X] Surety Bond (to be obtained)
 - [X] Privacy Policy
 - [X] Terms of Service
+- [X] SCC BFI License Application Form (Form CLA-1)
+- [X] Virginia Registered Agent Acceptance
 
 ---
 
 **Document Date:** [Date]
 **Prepared By:** [Your Name]
-**For:** Texas Office of Consumer Credit Commissioner
-**License Type:** Regulated Lender (Chapter 342)
+**For:** Virginia State Corporation Commission, Bureau of Financial Institutions
+**License Type:** Consumer Finance License (Title 6.2, Chapter 18, Code of Virginia)
+**License Fee:** $750

@@ -39,7 +39,16 @@ class Config:
     TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN', '')
     TWILIO_FROM_NUMBER = os.getenv('TWILIO_FROM_NUMBER', '')
 
-    # ── Optional: KYC ──
+    # ── Optional: Credit Bureau (Stipula) ──
+    STIPULA_API_KEY = os.getenv('STIPULA_API_KEY', '')
+    STIPULA_BASE_URL = os.getenv('STIPULA_BASE_URL', 'https://api.stipula.io/v1')
+
+    # ── Optional: Bank Linking (Plaid) ──
+    PLAID_CLIENT_ID = os.getenv('PLAID_CLIENT_ID', '')
+    PLAID_SECRET = os.getenv('PLAID_SECRET', '')
+    PLAID_ENV = os.getenv('PLAID_ENV', 'sandbox')
+
+    # ── Optional: KYC (Persona) ──
     PERSONA_API_KEY = os.getenv('PERSONA_API_KEY', '')
     PERSONA_TEMPLATE_ID = os.getenv('PERSONA_TEMPLATE_ID', '')
 

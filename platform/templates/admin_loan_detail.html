@@ -47,6 +47,13 @@
       </p>
     </div>
     <div class="flex space-x-2 mt-2 md:mt-0">
+      {% if loan.status == 'approved' and loan.disbursement_status == 'pending' %}
+      <form method="POST" action="/admin/fund-loan/{{ loan.id }}" class="inline">
+        <button type="submit" class="bg-accent hover:bg-green-700 text-white text-sm px-5 py-2.5 rounded-xl font-semibold transition shadow-sm">
+          <i class="fas fa-money-bill-wave mr-2"></i>Fund Loan — ${{ "{:,.0f}".format(loan.principal) }}
+        </button>
+      </form>
+      {% endif %}
       <button class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-4 py-2 rounded-lg transition"><i class="fas fa-exclamation-triangle mr-1"></i>Mark Delinquent</button>
       <button class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-4 py-2 rounded-lg transition"><i class="fas fa-envelope mr-1"></i>Send Reminder</button>
       <button class="bg-red-500 hover:bg-red-600 text-white text-xs px-4 py-2 rounded-lg transition"><i class="fas fa-ban mr-1"></i>Charge Off</button>

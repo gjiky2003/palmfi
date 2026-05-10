@@ -12,7 +12,7 @@ make a profit — it's to **prove loss curves** so investors have data to lend a
 | Item | Cost |
 |------|------|
 | Loan capital pool | $15,000–$35,000 |
-| Licensing (Texas) | $5,000–$8,000 |
+| Licensing (Virginia) | $5,000–$8,000 |
 | Legal (attorney) | $3,000–$5,000 |
 | Stripe Identity KYC | ~$30 (10 borrowers × $3) |
 | Domain + hosting | ~$200/yr |
@@ -29,12 +29,12 @@ Time: 6-10 weeks from starting Phase A.
 
 **Approach 2: Your Network**
 - Post on LinkedIn/Twitter (professionally)
-- "Launching a new AI-powered lending platform in Texas — looking for 5 early borrowers. Better rates, instant decisions."
+- "Launching a new AI-powered lending platform in Virginia — looking for 5 early borrowers. Better rates, instant decisions."
 - Offer a special founder's rate (lower APR) for the first cohort
 
 **Approach 3: Targeted (If licensed)**
 - Only do this once your license is approved
-- Small Facebook/Google ads targeting Texas, credit score 580-720
+- Small Facebook/Google ads targeting Virginia, credit score 580-720
 - Budget: $200-500 for pilot
 
 ### The Pilot Loan Process
@@ -101,7 +101,7 @@ Once you have 10 loans of performance data:
 1. **Proof of concept** — 10 loans showing you can originate, service, collect
 2. **Loss curves** — Actual default rates vs. predicted (AUC 0.756 validation)
 3. **Unit economics** — Cost per loan ($0.50), revenue per loan, margin
-4. **Compliance status** — Texas license or partnership in place
+4. **Compliance status** — Virginia license or partnership in place
 5. **Growth plan** — How you'll deploy their capital profitably
 
 ### Pitch Materials Ready

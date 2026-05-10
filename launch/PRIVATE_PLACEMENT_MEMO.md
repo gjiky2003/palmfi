@@ -33,7 +33,7 @@ risk-adjusted returns.
 | Use | Amount | Detail |
 |-----|--------|--------|
 | Loan capital pool | $XX,XXX | Fund first 25-50 loans |
-| State licensing fees | $5,000 | Texas, Florida applications |
+| State licensing fees | $5,000 | Virginia application |
 | Legal & compliance | $10,000 | Entity formation, counsel, PPM |
 | KYC/identity vendor | $3,000 | Persona/Onfido integration |
 | Technology infrastructure | $2,000 | Domain, hosting, Stripe fees |

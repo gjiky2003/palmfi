@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Manual Review - PalmFi Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:"#1a365d",accent:"#059669"}}}}</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+<nav class="bg-primary text-white shadow-lg">
+<div class="max-w-7xl mx-auto px-4"><div class="flex justify-between h-16 items-center">
+<a href="/admin/dashboard" class="text-2xl font-bold"><i class="fas fa-bolt mr-2 text-accent"></i>PalmFi Admin</a>
+<div class="flex items-center space-x-4">
+<a href="/admin/manual-review" class="text-accent font-semibold">Manual Review</a>
+<a href="/admin/dashboard" class="hover:text-accent transition">Dashboard</a>
+<a href="/logout" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm">Logout</a>
+</div></div></div></nav>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}{% for cat,msg in messages %}
+<div class="max-w-7xl mx-auto px-4 mt-4"><div class="p-4 rounded-lg text-sm font-medium {{ 'bg-green-100 text-green-800' if cat=='success' else 'bg-red-100 text-red-800' if cat=='error' else 'bg-yellow-100 text-yellow-800' }}">{{ msg }}</div></div>
+{% endfor %}{% endif %}{% endwith %}
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold text-primary"><i class="fas fa-clipboard-list mr-3"></i>Manual Review Queue</h1>
+    <span class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-semibold">{{ reviews|length }} Pending</span>
+  </div>
+
+  {% if reviews %}
+  <div class="space-y-6">
+    {% for item in reviews %}
+    {% set app = item.app %}
+    {% set review = item.review %}
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden border-l-4 {{ 'border-yellow-500' if not review or review.recommendation.decision == 'escalate' else 'border-green-500' if review and review.recommendation.decision == 'approve' else 'border-red-500' }}">
+      <!-- Header -->
+      <div class="bg-gray-50 px-6 py-4 flex justify-between items-center">
+        <div>
+          <h2 class="text-xl font-bold text-primary">#{{ app.id }} — {{ app.first_name }} {{ app.last_name }}</h2>
+          <p class="text-sm text-gray-500">{{ app.email }} | Applied: {{ app.created_at }}</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 rounded-full text-xs font-semibold {{ 'bg-yellow-100 text-yellow-800' if app.status == 'pending_reconsideration' else 'bg-green-100 text-green-800' }}">{{ app.status|replace('_',' ')|title }}</span>
+          <span class="font-bold text-lg">{{ app.risk_score }}/100</span>
+        </div>
+      </div>
+
+      <div class="p-6 grid md:grid-cols-3 gap-6">
+        <!-- Left: Application Details -->
+        <div>
+          <h3 class="font-semibold text-primary mb-3"><i class="fas fa-file-alt mr-2"></i>Application</h3>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span class="text-gray-500">Loan Amount</span><span class="font-semibold">${{ "{:,.0f}".format(app.loan_amount) }}</span></div>
+            <div class="flex justify-between"><span class="text-gray-500">Credit Score</span><span class="font-semibold">{{ app.credit_score or 'N/A' }}</span></div>
+            <div class="flex justify-between"><span class="text-gray-500">Cash Flow</span><span class="font-semibold">{{ app.cash_flow_score or 'N/A' }}/100</span></div>
+          </div>
+        </div>
+
+        <!-- Center: LLM Assistant Review -->
+        <div class="md:col-span-2">
+          {% if review %}
+          <div class="flex items-center gap-2 mb-3">
+            <i class="fas fa-robot text-accent"></i>
+            <h3 class="font-semibold text-primary">AI Review Assistant</h3>
+            <span class="text-xs text-gray-400">— mock review</span>
+          </div>
+
+          <div class="mb-2">
+            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold {{ 'bg-green-100 text-green-800' if review.recommendation.decision == 'approve' else 'bg-yellow-100 text-yellow-800' if review.recommendation.decision == 'conditional_approve' else 'bg-red-100 text-red-800' }}">
+              {{ review.recommendation.decision|upper|replace('_',' ') }}
+            </span>
+            <span class="text-xs text-gray-500 ml-2">Confidence: {{ review.recommendation.confidence|title }}</span>
+          </div>
+
+          <p class="text-sm text-gray-600 mb-3">{{ review.review_summary }}</p>
+
+          <div class="grid md:grid-cols-2 gap-3 text-sm mb-3">
+            <div>
+              <h4 class="font-semibold text-red-700 text-xs uppercase mb-1">Risk Factors</h4>
+              <ul class="space-y-1">
+                {% for rf in review.risk_factors[:3] %}
+                <li class="flex items-start gap-1"><span class="text-red-500 mt-0.5">&#9679;</span><span class="text-gray-600">{{ rf.factor }}: {{ rf.detail }}</span></li>
+                {% endfor %}
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold text-green-700 text-xs uppercase mb-1">Strengths</h4>
+              <ul class="space-y-1">
+                {% for sf in review.strength_factors[:3] %}
+                <li class="flex items-start gap-1"><span class="text-green-500 mt-0.5">&#9679;</span><span class="text-gray-600">{{ sf.factor }}: {{ sf.detail }}</span></li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+
+          {% if review.red_flags %}
+          <div class="p-2 bg-red-50 rounded-lg mb-3">
+            <h4 class="font-semibold text-red-700 text-xs uppercase mb-1">Red Flags</h4>
+            {% for rf in review.red_flags[:2] %}
+            <div class="flex items-start gap-1 text-sm"><span class="text-red-500 mt-0.5">&#9888;</span><span class="text-gray-600">{{ rf.flag }} — <em>{{ rf.action_required }}</em></span></div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <div class="p-2 bg-blue-50 rounded-lg">
+            <h4 class="font-semibold text-blue-700 text-xs uppercase mb-1">LLM Rationale</h4>
+            <p class="text-sm text-gray-600">{{ review.recommendation.rationale[:200] }}...</p>
+          </div>
+
+          {% if review.questions_for_borrower %}
+          <div class="mt-3 p-2 bg-yellow-50 rounded-lg">
+            <h4 class="font-semibold text-yellow-700 text-xs uppercase mb-1">Questions for Borrower</h4>
+            <ul class="text-sm text-gray-600 space-y-1">
+              {% for q in review.questions_for_borrower[:2] %}
+              <li><i class="fas fa-question-circle text-yellow-500 mr-1"></i>{{ q }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+
+          {% else %}
+          <div class="p-4 bg-gray-100 rounded-lg text-center">
+            <p class="text-sm text-gray-500"><i class="fas fa-exclamation-triangle mr-2"></i>{{ item.summary }}</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="border-t p-4 bg-gray-50">
+        <form method="POST" action="/admin/manual-review/{{ app.id }}/decide" class="flex items-center gap-4">
+          <input type="hidden" name="app_id" value="{{ app.id }}">
+          <select name="decision" class="border rounded-lg px-4 py-2 text-sm">
+            <option value="approve" {{ 'selected' if review and review.recommendation.decision == 'approve' }}>Approve</option>
+            <option value="decline">Decline</option>
+          </select>
+          <input type="text" name="notes" placeholder="Admin notes..." class="flex-1 border rounded-lg px-4 py-2 text-sm">
+          <button type="submit" class="bg-primary hover:bg-blue-900 text-white px-6 py-2 rounded-lg text-sm font-semibold transition">
+            <i class="fas fa-check mr-1"></i>Submit Decision
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="bg-white rounded-2xl shadow-xl p-12 text-center">
+    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="fas fa-check-circle text-4xl text-green-500"></i>
+    </div>
+    <h2 class="text-2xl font-bold text-gray-700 mb-2">No Pending Reviews</h2>
+    <p class="text-gray-500">All applications have been processed. Check back later.</p>
+  </div>
+  {% endif %}
+</div>
+</body>
+</html>

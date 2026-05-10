@@ -62,7 +62,7 @@ This table shows how the cost of your loan is calculated.
 - **Amount Financed:** This is the amount of credit provided to you. It may be less than the loan amount if any fees are deducted upfront.
 - **Total of Payments:** This is the principal amount plus the total finance charge — the full amount you will have paid by the time the loan is paid off.
 
-**Truth in Lending Disclosure:** This table is provided to comply with the federal Truth in Lending Act (Regulation Z) and Texas Finance Code Chapter 342.
+**Truth in Lending Disclosure:** This table is provided to comply with the federal Truth in Lending Act (Regulation Z) and applicable state law.
 
 ---
 
@@ -96,12 +96,12 @@ The table below shows how each payment is applied to your loan. This is called a
 
 **You can pay off this loan early at any time with no penalty.**
 
-- **No Prepayment Penalty:** Texas law (Texas Finance Code § 342.252) and this agreement do not charge any fee or penalty for paying off your loan early — whether you pay a little extra each month or pay the entire balance at once.
+- **No Prepayment Penalty:** Virginia law (Va. Code § 6.2-1819) and this agreement do not charge any fee or penalty for paying off your loan early — whether you pay a little extra each month or pay the entire balance at once.
 - **How Early Payoff Works:** If you pay off the loan before the end of the term, you only pay:
   - The remaining principal balance
   - Any interest that has accrued (built up) since your last payment
   - Any unpaid fees (such as late fees if applicable)
-- **No Rebate of Unearned Interest (Precomputed Loans):** If your loan uses precomputed interest, you are entitled to a refund of any unearned finance charge under the "actuarial method" as required by Texas Finance Code § 342.259.
+- **No Rebate of Unearned Interest (Precomputed Loans):** If your loan uses precomputed interest, you are entitled to a refund of any unearned finance charge under the "actuarial method" as required by Va. Code § 6.2-1819.
 - **How to Prepay:** Contact us at [Phone Number] or [Email Address] to request a payoff statement. We will provide you with the exact amount needed to pay off the loan within [Number, e.g., 3] business days.
 - **Extra Payments:** You may also make extra payments in addition to your regular monthly payment at any time. Any extra payment will be applied to your principal balance first, which reduces the total interest you pay over the life of the loan.
 
@@ -114,7 +114,7 @@ The table below shows how each payment is applied to your loan. This is called a
 | **Grace Period** | [Number, e.g., 10] days after the due date |
 | **Late Fee** | The lesser of $[Amount, e.g., 30] or [Percentage, e.g., 5]% of the unpaid payment amount |
 | **When Late Fee Applies** | If full payment is not received by [Time, e.g., 5:00 PM CT] on the [Number]th day after the due date |
-| **Maximum Late Fee** | Limited by Texas Finance Code § 342.255 |
+| **Maximum Late Fee** | Limited by Va. Code § 6.2-1817 |
 
 **Grace Period:** You have [Number] calendar days after your payment due date to make your payment without any late fee. This is your "grace period."
 
@@ -122,7 +122,7 @@ The table below shows how each payment is applied to your loan. This is called a
 - $[Late Fee Dollar Amount], or
 - [Late Fee Percentage]% of the unpaid payment amount
 
-Texas law limits late fees to no more than 5% of the payment amount that is late.
+Virginia law (Va. Code § 6.2-1817) limits late fees to no more than 5% of the payment amount that is late.
 
 **Missed Payments:** If you miss a payment, you should contact us right away. We may be able to work with you on a modified payment plan. Ignoring a missed payment can lead to default (see Section 6).
 
@@ -141,7 +141,7 @@ Texas law limits late fees to no more than 5% of the payment amount that is late
 **What we will do before collections start:**
 - We will send you written notices at least [Number, e.g., 30] days before taking any collection action
 - We will try to contact you by phone and mail to work out a payment arrangement
-- We will follow all rules of the Texas Debt Collection Act (Texas Finance Code Chapter 392)
+- We will follow all rules of the Virginia Consumer Protection Act and applicable debt collection laws
 
 **What may happen if you default:**
 1. **Late fees** will continue to apply to missed payments as described in Section 5
@@ -191,9 +191,9 @@ You may request a written statement showing the exact amount needed to pay off y
 Your personal and financial information will be protected in accordance with the Gramm-Leach-Bliley Act (GLBA) and our Privacy Policy. We will not share your information with third parties except as necessary to service your loan or as required by law.
 
 ### g) Right to Be Free from Discrimination
-Federal and Texas law prohibit credit discrimination based on race, color, religion, national origin, sex, marital status, age (provided you are old enough to enter a contract), or because you receive public assistance income. If you believe you have been discriminated against, contact:
+Federal and Virginia law prohibit credit discrimination based on race, color, religion, national origin, sex, marital status, age (provided you are old enough to enter a contract), or because you receive public assistance income. If you believe you have been discriminated against, contact:
 - **Consumer Financial Protection Bureau (CFPB):** 1-855-411-2372 or consumerfinance.gov
-- **Texas Office of Consumer Credit Commissioner (OCCC):** 1-800-538-1579 or occc.texas.gov
+- **Virginia SCC Bureau of Financial Institutions:** 804-371-9658 or scc.virginia.gov
 
 ### h) Right to Information About This Loan
 You may request a copy of your signed loan agreement, payment history, and amortization schedule at any time. We will provide these documents at no charge.
@@ -201,7 +201,7 @@ You may request a copy of your signed loan agreement, payment history, and amort
 ### i) Right to Complain
 If you have a complaint about this loan, our service, or our collection practices, you may:
 1. **Contact us directly:** [Complaint Email] or [Complaint Phone Number]
-2. **File a complaint with the Texas OCCC:** occc.texas.gov / 1-800-538-1579
+2. **File a complaint with the Virginia SCC Bureau of Financial Institutions:** 1300 East Main Street, Suite 800, Richmond, VA 23219, Phone: 804-371-9658
 3. **File a complaint with the CFPB:** consumerfinance.gov / 1-855-411-2372
 
 ### j) Right to Waive Certain Rights Only in Writing
@@ -231,19 +231,19 @@ The Lender may sell, transfer, or assign this loan agreement to another company 
 - The new company must comply with all applicable laws
 
 ### d) Right to Take Legal Action
-If you default on this loan and do not cure the default as described in Section 6, the Lender has the right to take legal action against you to recover the amount owed. This includes filing a lawsuit in a Texas court to obtain a judgment.
+If you default on this loan and do not cure the default as described in Section 6, the Lender has the right to take legal action against you to recover the amount owed. This includes filing a lawsuit in a Virginia court to obtain a judgment.
 
 ### e) Right to Charge Fees Allowed by Law
-The Lender may charge fees specifically allowed by this agreement and Texas law, including:
+The Lender may charge fees specifically allowed by this agreement and Virginia law, including:
 - Late fees (Section 5)
 - Returned payment fees (Section 5)
-- Attorney's fees and court costs if collection requires legal action (as allowed by Texas law)
+- Attorney's fees and court costs if collection requires legal action (as allowed by Virginia law)
 
 ### f) Right to Modify Automatic Payment Instructions
 The Lender may change the way automatic payments are processed, with reasonable notice to you, as long as the change does not increase your payment amount or change the due date.
 
 ### g) No Right to Garnish Certain Wages
-The Lender acknowledges that certain types of income are exempt from garnishment under federal and Texas law, including Social Security benefits, disability benefits, child support, and certain pension benefits.
+The Lender acknowledges that certain types of income are exempt from garnishment under federal and Virginia law, including Social Security benefits, disability benefits, child support, and certain pension benefits.
 
 ---
 
@@ -251,20 +251,19 @@ The Lender acknowledges that certain types of income are exempt from garnishment
 
 | Item | Detail |
 |------|--------|
-| **Governing Law** | Texas Finance Code, Chapter 342, and applicable federal laws |
-| **Regulatory Authority** | Texas Office of Consumer Credit Commissioner (OCCC) |
-| **Venue** | [County Name] County, Texas |
-| **Jurisdiction** | State courts of [County Name] County, Texas |
+| **Governing Law** | Virginia Code, Title 6.2, Chapter 18, and applicable federal laws |
+| **Regulatory Authority** | Virginia State Corporation Commission, Bureau of Financial Institutions (SCC BFI) |
+| **Venue** | [COUNTY] County, Virginia |
+| **Jurisdiction** | State courts of [COUNTY] County, Virginia |
 
 **Governing Law:** This agreement is governed by:
-- **Texas Finance Code Chapter 342** — Texas Regulated Lender Law
-- **Texas Administrative Code Chapter 90** — Plain Language Loan Contract Requirements
-- **Texas Finance Code Chapter 392** — Texas Debt Collection Act
+- **Virginia Code Title 6.2, Chapter 18** — Virginia Consumer Finance Act
+- **Virginia Consumer Protection Act** — Va. Code § 59.1-196 et seq.
 - **Federal Truth in Lending Act (Regulation Z)** — 15 U.S.C. § 1601 et seq.
 - **Federal Equal Credit Opportunity Act (Regulation B)** — 15 U.S.C. § 1691 et seq.
 - **Gramm-Leach-Bliley Act** — Privacy of consumer financial information
 
-**Venue:** Any legal action related to this agreement must be filed in a court located in [County Name] County, Texas. You agree to the personal jurisdiction of these courts.
+**Venue:** Any legal action related to this agreement must be filed in a court located in [COUNTY] County, Virginia. You agree to the personal jurisdiction of these courts.
 
 **Waiver of Jury Trial:** Both you and the Lender agree to waive your right to a jury trial in any legal proceeding arising from this agreement. Instead, any dispute will be decided by a judge alone (bench trial). This provision does not affect your right to file a complaint with a regulatory agency.
 
@@ -339,9 +338,9 @@ By signing below, you acknowledge that:
 
 ---
 
-**Texas OCCC Notice:**
+**Virginia SCC BFI Notice:**
 
-THIS LOAN IS MADE BY A REGULATED LENDER LICENSED UNDER CHAPTER 342, TEXAS FINANCE CODE. ANY QUESTIONS OR COMPLAINTS REGARDING THIS LOAN SHOULD BE DIRECTED TO THE LENDER FIRST. IF THE LENDER DOES NOT RESOLVE YOUR COMPLAINT, YOU MAY CONTACT THE TEXAS OFFICE OF CONSUMER CREDIT COMMISSIONER AT 1-800-538-1579 OR WWW.OCCC.TEXAS.GOV.
+THIS LOAN IS MADE BY A REGULATED LENDER LICENSED BY THE VIRGINIA STATE CORPORATION COMMISSION, BUREAU OF FINANCIAL INSTITUTIONS. ANY QUESTIONS OR COMPLAINTS REGARDING THIS LOAN SHOULD BE DIRECTED TO THE LENDER FIRST. IF THE LENDER DOES NOT RESOLVE YOUR COMPLAINT, YOU MAY CONTACT THE VIRGINIA SCC BUREAU OF FINANCIAL INSTITUTIONS AT 1300 EAST MAIN STREET, SUITE 800, RICHMOND, VA 23219, PHONE: 804-371-9658.
 
 ---
 *Loan Agreement v1.0 — PalmFi Lending LLC*

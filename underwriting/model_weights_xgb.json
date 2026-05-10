@@ -1,0 +1,41 @@
+{
+  "model_path": "model_xgb.json",
+  "model_type": "xgboost",
+  "num_features": 12,
+  "feature_names": [
+    "credit_score",
+    "dti_ratio",
+    "utilization",
+    "num_derogatory",
+    "num_credit_lines",
+    "age",
+    "log_income",
+    "employment_length",
+    "log_loan_amount",
+    "home_rent",
+    "home_mortgage",
+    "home_own"
+  ],
+  "home_ownership_map": {
+    "mortgage": 0,
+    "own": 1,
+    "rent": 2
+  },
+  "best_iteration": 116,
+  "metrics": {
+    "train_auc": 0.7211,
+    "val_auc": 0.6774,
+    "test_auc": 0.6781
+  },
+  "source": "lending_club_2007_2018",
+  "num_samples_train": 100000,
+  "shap_baseline": 0.0,
+  "scale_pos_weight": 3.85,
+  "thresholds": {
+    "auto_approve": 50,
+    "consideration": 60,
+    "reconsideration": 60
+  },
+  "default_rate": 0.20634,
+  "shap_available": true
+}

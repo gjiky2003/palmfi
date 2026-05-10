@@ -2,10 +2,10 @@
 
 ## What Is a Surety Bond?
 
-A surety bond is a three-party guarantee that PalmFi will comply with Texas lending laws. If PalmFi violates the law and a consumer is harmed, they can claim against the bond.
+A surety bond is a three-party guarantee that PalmFi will comply with Virginia lending laws. If PalmFi violates the law and a consumer is harmed, they can claim against the bond.
 
 - **Principal:** PalmFi Lending LLC (you)
-- **Obligee:** State of Texas (OCCC)
+- **Obligee:** Commonwealth of Virginia (SCC BFI)
 - **Surety:** The bond company (they pay claims, then you reimburse them)
 
 ## How Much Bond Do You Need?
@@ -16,7 +16,7 @@ A surety bond is a three-party guarantee that PalmFi will comply with Texas lend
 | $100k–$500k | $50,000 | $500–$1,000 |
 | $500k+ | $100,000 | $1,000–$2,000 |
 
-Texas OCCC determines the exact amount during application review. Start with **$25,000** and increase later.
+Virginia SCC BFI determines the exact amount during application review. Start with **$25,000** and increase later.
 
 ## Where to Buy
 
@@ -34,10 +34,10 @@ Texas OCCC determines the exact amount during application review. Start with **$
    - LLC name + EIN
    - Your personal SSN (for credit check)
    - Estimated annual loan volume
-   - Texas OCCC license application number (once you have it)
+   - Virginia SCC BFI license application number (once you have it)
 3. **Pay premium** — typically $10-$20 per $1,000 of bond amount
 4. **Receive bond** — PDF within 1-2 business days
-5. **File with OCCC** — upload to ALECS or mail original bond form
+5. **File with Virginia SCC BFI** — upload to SCC portal or mail original bond form
 
 ## What Affects Your Premium
 
@@ -49,4 +49,4 @@ At ~$300/year for a $25k bond, this is the cheapest part of licensing.
 
 ## Timeline
 - Quote to issued bond: **1-2 business days**
-- File with OCCC: same day
+- File with Virginia SCC BFI: same day

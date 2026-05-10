@@ -9,3 +9,4 @@ autopilot.log
 .venv/
 *.egg-info/
 dist/
+*.csv

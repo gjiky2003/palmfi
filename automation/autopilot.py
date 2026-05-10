@@ -193,59 +193,35 @@ def step_auto_decision(conn) -> dict:
 # ═══════════════════════════════════════════════════════════════
 
 def step_auto_disburse(conn) -> dict:
-    apps = conn.execute(
-        "SELECT a.id, a.borrower_id, a.loan_amount, a.term_months, a.interest_rate, "
-        "b.first_name, b.email, b.stripe_customer_id "
-        "FROM applications a "
-        "JOIN borrowers b ON a.borrower_id=b.id "
-        "LEFT JOIN loans l ON l.application_id=a.id "
-        "WHERE a.status='approved' AND l.id IS NULL "
-        "LIMIT 50"
+    """Disburse approved loans that are pending funding (mock ACH)."""
+    loans = conn.execute(
+        """SELECT l.id, l.borrower_id, l.principal as loan_amount, l.interest_rate,
+                  l.term_months, l.monthly_payment,
+                  b.first_name, b.email, b.stripe_customer_id
+        FROM loans l
+        JOIN borrowers b ON l.borrower_id=b.id
+        WHERE l.status='approved' AND l.disbursement_status='pending'
+        LIMIT 50"""
     ).fetchall()
     stats = {"disbursed": 0, "errors": 0}
-    for app in apps:
+    for ln in loans:
         try:
-            monthly_pmt = round(app["loan_amount"] * (app["interest_rate"] or 0.18) / 12 * 
-                               (1 + 1 / ((1 + (app["interest_rate"] or 0.18) / 12) ** (app["term_months"] or 36) - 1)), 2)
-            if monthly_pmt <= 0:
-                monthly_pmt = round(app["loan_amount"] / (app["term_months"] or 36), 2)
-            # Create loan record
+            # Mark as disbursed
             conn.execute(
-                "INSERT INTO loans (application_id, borrower_id, principal, interest_rate, "
-                "term_months, monthly_payment, origination_fee, remaining_balance, status, "
-                "disbursed_at, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-                (app["id"], app["borrower_id"], app["loan_amount"], app["interest_rate"] or 0.18,
-                 app["term_months"] or 36, monthly_pmt, 0,
-                 app["loan_amount"], "active",
-                 datetime.now(timezone.utc).isoformat(),
-                 datetime.now(timezone.utc).isoformat()),
+                "UPDATE loans SET status='active', disbursement_status='completed', disbursed_at=datetime('now') WHERE id=?",
+                (ln["id"],)
             )
-            loan_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
-
-            # Trigger Stripe ACH transfer
-            transfer_id = None
-            if sp and os.environ.get("STRIPE_SECRET_KEY"):
-                try:
-                    transfer_id = sp.disburse(
-                        borrower_id=app["borrower_id"], amount=app["loan_amount"], loan_id=loan_id,
-                    )
-                except Exception:
-                    logger.warning("Stripe disburse failed for loan %d — continuing", loan_id)
-
+            # Record disbursement payment
             conn.execute(
-                "UPDATE applications SET decided_at=? WHERE id=?",
-                (datetime.now(timezone.utc).isoformat(), app["id"]),
+                "INSERT INTO payments (loan_id, borrower_id, amount_cents, payment_type, status, paid_at) VALUES (?,?,?,'disbursement','completed',datetime('now'))",
+                (ln["id"], ln["borrower_id"], int(float(ln["loan_amount"]) * 100))
             )
-            _send_notification(to=app["email"], template="funded_email",
-                               context={"name": app["first_name"], "amount": app["loan_amount"]})
             stats["disbursed"] += 1
-            record(conn, "auto_disburse", "loan", loan_id,
-                   {"amount": app["loan_amount"], "transfer_id": transfer_id})
+            record(conn, "auto_disburse", "loan", ln["id"],
+                   {"amount": float(ln["loan_amount"]), "borrower": ln["first_name"]})
         except Exception as e:
             stats["errors"] += 1
-            record(conn, "auto_disburse_error", "application", app["id"],
-                   {"error": str(e)}, success=False)
-    conn.commit()
+            record(conn, "auto_disburse_error", "loan", ln["id"], {"error": str(e)})
     return stats
 
 

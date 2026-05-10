@@ -26,7 +26,22 @@
     <div class="bg-white p-4 rounded-xl shadow"><div class="text-xs text-gray-500">Outstanding</div><div class="text-xl font-bold">${{ "{:,.0f}".format(funding.total_outstanding) }}</div></div>
     <div class="bg-white p-4 rounded-xl shadow"><div class="text-xs text-gray-500">Pool Utilization</div><div class="text-xl font-bold">{{ funding.pool_utilization_pct }}%</div></div>
     <div class="bg-white p-4 rounded-xl shadow"><div class="text-xs text-gray-500">Available Capital</div><div class="text-xl font-bold text-green-600">${{ "{:,.0f}".format(funding.available_capital) }}</div></div>
+    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-accent"><div class="text-xs text-gray-500">Pending Funding</div><div class="text-xl font-bold text-accent">{{ funding.pending_count or 0 }}</div></div>
   </div>
+
+  {% if funding.pending_count and funding.pending_count > 0 %}
+  <div class="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-6 flex items-center justify-between">
+    <div>
+      <h3 class="font-semibold text-blue-800"><i class="fas fa-clock mr-2"></i>Pending Disbursements</h3>
+      <p class="text-sm text-blue-600 mt-1">{{ funding.pending_count }} loan(s) awaiting funding — <strong>${{ "{:,.0f}".format(funding.pending_total) }}</strong> total</p>
+    </div>
+    <form method="POST" action="/admin/fund-loan/batch">
+      <button type="submit" class="bg-accent hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition shadow-sm">
+        <i class="fas fa-money-bill-wave mr-2"></i>Batch Fund All
+      </button>
+    </form>
+  </div>
+  {% endif %}
 
   <div class="grid md:grid-cols-3 gap-6 mb-8">
     <div class="bg-white p-6 rounded-xl shadow">

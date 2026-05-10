@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Second Look - PalmFi</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:"#1a365d",accent:"#059669"}}}}</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+<nav class="bg-primary text-white shadow-lg">
+<div class="max-w-7xl mx-auto px-4"><div class="flex justify-between h-16 items-center">
+<a href="/" class="text-2xl font-bold"><i class="fas fa-bolt mr-2 text-accent"></i>PalmFi</a>
+<div class="flex items-center space-x-4">
+<a href="/dashboard" class="hover:text-accent transition">Dashboard</a>
+<a href="/logout" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm">Logout</a>
+</div></div></div></nav>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}{% for cat,msg in messages %}
+<div class="max-w-7xl mx-auto px-4 mt-4"><div class="p-4 rounded-lg text-sm font-medium {{ 'bg-green-100 text-green-800' if cat=='success' else 'bg-red-100 text-red-800' if cat=='error' else 'bg-yellow-100 text-yellow-800' }}">{{ msg }}</div></div>
+{% endfor %}{% endif %}{% endwith %}
+
+<div class="max-w-3xl mx-auto px-4 py-12">
+  <!-- Zone-Based Header -->
+  {% if data.zone == 'consideration' %}
+  <div class="text-center mb-10">
+    <div class="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="fas fa-search-plus text-3xl text-yellow-600"></i>
+    </div>
+    <h1 class="text-4xl font-bold text-primary">Let's Take a Closer Look</h1>
+    <p class="text-gray-500 mt-2 max-w-lg mx-auto">Your credit profile shows promise. Connect your bank account so we can review your cash flow — this could get you approved.</p>
+  </div>
+  {% else %}
+  <div class="text-center mb-10">
+    <div class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="fas fa-redo-alt text-3xl text-orange-600"></i>
+    </div>
+    <h1 class="text-4xl font-bold text-primary">You Deserve a Second Look</h1>
+    <p class="text-gray-500 mt-2 max-w-lg mx-auto">Credit scores don't tell the whole story. Connect your bank account and let us analyze your real cash flow — many applicants qualify this way.</p>
+  </div>
+  {% endif %}
+
+  <!-- Current Status Card -->
+  <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+    <h2 class="text-xl font-semibold mb-4">Your Application Summary</h2>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <span class="text-gray-500 text-sm">Risk Score</span>
+        <div class="text-2xl font-bold">{{ data.risk_score }}/100</div>
+      </div>
+      <div>
+        <span class="text-gray-500 text-sm">Zone</span>
+        <div class="text-2xl font-bold {{ 'text-yellow-600' if data.zone=='consideration' else 'text-orange-600' }}">
+          {{ data.zone|title }}
+        </div>
+      </div>
+      <div>
+        <span class="text-gray-500 text-sm">Credit Score</span>
+        <div class="text-2xl font-bold">{{ data.fico_score or 'N/A' }}</div>
+      </div>
+      <div>
+        <span class="text-gray-500 text-sm">Loan Amount</span>
+        <div class="text-2xl font-bold">${{ "{:,.0f}".format(data.loan_amount|float) }}</div>
+      </div>
+    </div>
+    {% if data.message %}
+    <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-800">
+      <i class="fas fa-info-circle mr-2"></i>{{ data.message }}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Plaid Link Section -->
+  <div class="bg-white rounded-2xl shadow-xl p-8 border-2 border-dashed border-accent/40">
+    <div class="text-center mb-6">
+      <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-university text-2xl text-accent"></i>
+      </div>
+      <h2 class="text-2xl font-bold text-primary">Connect Your Bank Account</h2>
+      <p class="text-gray-500 mt-2">Securely link your bank in under 2 minutes. We'll analyze 90 days of transaction history to look for income stability and responsible financial behavior.</p>
+    </div>
+
+    <!-- Bank Selection Cards (Mock Plaid) -->
+    <div class="grid md:grid-cols-2 gap-4 mb-6">
+      <div class="border rounded-xl p-4 hover:border-accent hover:bg-green-50 transition cursor-pointer" onclick="selectBank('good', this)">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center"><i class="fas fa-building text-blue-600"></i></div>
+          <div>
+            <div class="font-semibold">Chase Bank</div>
+            <div class="text-sm text-gray-500">Stable income, no overdrafts</div>
+          </div>
+        </div>
+      </div>
+      <div class="border rounded-xl p-4 hover:border-accent hover:bg-green-50 transition cursor-pointer" onclick="selectBank('average', this)">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center"><i class="fas fa-university text-blue-600"></i></div>
+          <div>
+            <div class="font-semibold">Wells Fargo</div>
+            <div class="text-sm text-gray-500">Regular income, occasional overdraft</div>
+          </div>
+        </div>
+      </div>
+      <div class="border rounded-xl p-4 hover:border-accent hover:bg-green-50 transition cursor-pointer" onclick="selectBank('thin', this)">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center"><i class="fas fa-wallet text-orange-600"></i></div>
+          <div>
+            <div class="font-semibold">Bank of America</div>
+            <div class="text-sm text-gray-500">Thin file, irregular deposits</div>
+          </div>
+        </div>
+      </div>
+      <div class="border rounded-xl p-4 hover:border-accent hover:bg-green-50 transition cursor-pointer" onclick="selectBank('gig_worker', this)">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center"><i class="fas fa-laptop text-purple-600"></i></div>
+          <div>
+            <div class="font-semibold">US Bank</div>
+            <div class="text-sm text-gray-500">Gig economy, variable income</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plaid Action Button -->
+    <form id="plaidForm" method="POST" action="/second-look/connect">
+      <input type="hidden" name="plaid_public_token" id="plaidToken" value="">
+      <button type="button" id="connectBtn" onclick="connectBank()" class="w-full bg-accent hover:bg-green-700 text-white py-4 rounded-xl font-semibold text-lg transition">
+        <i class="fas fa-link mr-2"></i>Connect Bank Account
+      </button>
+    </form>
+
+    <div class="mt-4 text-center">
+      <a href="/dashboard" class="text-gray-400 hover:text-gray-600 text-sm">
+        <i class="fas fa-arrow-left mr-1"></i>Skip for now, return to dashboard
+      </a>
+    </div>
+
+    <!-- Trust badges -->
+    <div class="flex justify-center gap-6 mt-6 text-xs text-gray-400">
+      <span><i class="fas fa-lock mr-1"></i>256-bit encryption</span>
+      <span><i class="fas fa-eye-slash mr-1"></i>Read-only access</span>
+      <span><i class="fas fa-clock mr-1"></i>2-minute setup</span>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedProfile = 'average';
+
+function selectBank(profile, el) {
+  selectedProfile = profile;
+  document.querySelectorAll('.grid.md\\:grid-cols-2 > div').forEach(c => {
+    c.classList.remove('border-accent', 'bg-green-50');
+    c.classList.add('border-gray-200');
+  });
+  el.classList.remove('border-gray-200');
+  el.classList.add('border-accent', 'bg-green-50');
+}
+
+function connectBank() {
+  const btn = document.getElementById('connectBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Connecting...';
+
+  // Simulate Plaid Link — generates mock token
+  const mockToken = 'link-sandbox-mock-' + Date.now() + '-' + selectedProfile;
+  document.getElementById('plaidToken').value = mockToken;
+  document.getElementById('plaidForm').submit();
+}
+</script>
+
+</body>
+</html>

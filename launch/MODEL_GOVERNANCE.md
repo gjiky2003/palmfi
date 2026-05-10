@@ -18,8 +18,23 @@
 | **Model Type** | Ensemble (Logistic Regression + Decision Tree + Random Forest) |
 | **Purpose** | Predict probability of default (PD) for unsecured personal loan applicants to determine creditworthiness, risk tier, interest rate, and loan amount |
 | **Output** | Risk score (0–100, where higher = riskier), risk tier (A–E), approval decision, interest rate |
+| **Target Variable** | `default_flag` (binary: 1 = charged off/default, 0 = fully paid) — see §1.2 |
 | **Development Team** | PalmFi Lending LLC — Data Science & Underwriting |
 | **Last Validation Date** | May 2026 |
+
+### 1.1.1 Target Variable Definition
+
+| Attribute | Value |
+|-----------|-------|
+| **Name** | `default_flag` |
+| **Type** | Binary classification (1 = default, 0 = no default) |
+| **Data Source** | LendingClub `loan_status` field (2007–2018) |
+| **Positive Class (1)** | `Charged Off`, `Default`, `Late (31-120 days)`, `In Grace Period` — borrower failed to repay per contractual terms |
+| **Negative Class (0)** | `Fully Paid` — borrower completed all payments as agreed |
+| **Excluded** | `Current` / `Issued` — terminal outcome not yet observed |
+| **Base Rate** | 20.5% default rate across 110K training records |
+| **Time Horizon** | Full loan term (12–60 months). All loans in dataset have reached terminal outcome. |
+| **Regulatory Relevance** | Binary PD (probability of default) is the standard target under Basel II IRB approach and ECOA/Reg B fair lending analysis. The model outputs a continuous PD estimate (0–1), which is mapped to risk tiers and an approval threshold of `risk_score <= 75`. |
 
 ### 1.1 Model Architecture
 

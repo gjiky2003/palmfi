@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Apply - PalmFi</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Apply - SunCredit</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:"#1a365d",accent:"#059669"}}}}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
@@ -11,7 +12,7 @@
 <body class="bg-gray-50 min-h-screen">
 <nav class="bg-primary text-white shadow-lg">
 <div class="max-w-7xl mx-auto px-4"><div class="flex justify-between h-16 items-center">
-<a href="/" class="text-2xl font-bold"><i class="fas fa-bolt mr-2 text-accent"></i>PalmFi</a>
+<a href="/" class="text-2xl font-bold"><i class="fas fa-bolt mr-2 text-accent"></i>SunCredit</a>
 <div class="flex items-center space-x-4">
 <a href="/dashboard" class="hover:text-accent transition">Dashboard</a>
 <a href="/logout" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm">Logout</a>
@@ -21,7 +22,7 @@
 <div class="max-w-7xl mx-auto px-4 mt-4"><div class="p-4 rounded-lg text-sm font-medium {{ 'bg-green-100 text-green-800' if cat=='success' else 'bg-red-100 text-red-800' if cat=='error' else 'bg-yellow-100 text-yellow-800' }}">{{ msg }}</div></div>
 {% endfor %}{% endif %}{% endwith %}
 <div class="max-w-4xl mx-auto px-4 py-8">
-<div class="text-center mb-8"><h1 class="text-4xl font-bold text-primary">Loan Application</h1><p class="text-gray-500 mt-2 text-sm">Formal application — all fields required</p></div>
+<div class="text-center mb-8"><h1 class="text-4xl font-bold text-primary">Loan Application</h1><p class="text-gray-500 mt-2 text-sm">Secure application — data encrypted in transit</p></div>
 
 <!-- Step Progress -->
 <div class="max-w-2xl mx-auto mb-10">
@@ -55,10 +56,15 @@
 <div><label class="block text-sm font-medium text-gray-700">Legal First Name</label><input type="text" name="first_name" value="{{ data.first_name or '' }}" required class="w-full mt-1 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-accent focus:border-accent"></div>
 <div><label class="block text-sm font-medium text-gray-700">Legal Last Name</label><input type="text" name="last_name" value="{{ data.last_name or '' }}" required class="w-full mt-1 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-accent focus:border-accent"></div>
 <div><label class="block text-sm font-medium text-gray-700">Date of Birth</label><input type="date" name="date_of_birth" value="{{ data.date_of_birth or '' }}" required class="w-full mt-1 px-4 py-3 border rounded-xl"></div>
-<div><label class="block text-sm font-medium text-gray-700">Social Security Number <span class="text-xs text-gray-400">(last 4 digits)</span></label>
-  <input type="password" name="ssn_last4" value="{{ data.ssn_last4 or '' }}" maxlength="4" pattern="[0-9]{4}" placeholder="XXXX" required class="w-full mt-1 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-accent"></div>
+<div><label class="block text-sm font-medium text-gray-700">Social Security Number</label>
+  <input type="password" name="ssn" value="{{ data.ssn or '' }}" maxlength="11" placeholder="XXX-XX-XXXX" required class="w-full mt-1 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-accent">
+  <p class="text-xs text-gray-400 mt-1"><i class="fas fa-lock mr-1"></i> Full SSN required for credit bureau pull (soft inquiry, does not affect your score)</p></div>
 <div><label class="block text-sm font-medium text-gray-700">Phone Number</label><input type="tel" name="phone" value="{{ data.phone or '' }}" placeholder="(555) 123-4567" required class="w-full mt-1 px-4 py-3 border rounded-xl"></div>
 <div><label class="block text-sm font-medium text-gray-700">Email</label><input type="email" name="email" value="{{ data.email or user_email or '' }}" readonly class="w-full mt-1 px-4 py-3 bg-gray-100 border rounded-xl text-gray-500"><p class="text-xs text-gray-400 mt-1">Verified on account</p></div>
+</div>
+<div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6 text-sm text-blue-800 flex items-start gap-3">
+  <i class="fas fa-shield-alt mt-0.5"></i>
+  <div><strong>Privacy notice:</strong> Your SSN is used only to pull your credit report from Experian/TransUnion. This is a <strong>soft inquiry</strong> and will not affect your credit score. Data is encrypted and never stored in plaintext.</div>
 </div>
 <div class="mt-8 flex justify-end"><button type="submit" name="step" value="2" class="bg-accent hover:bg-green-700 text-white px-10 py-3 rounded-xl font-semibold text-lg">Continue <i class="fas fa-arrow-right ml-2"></i></button></div>
 
@@ -88,7 +94,7 @@
 <div class="grid grid-cols-2 gap-3">
 <div><label class="block text-sm font-medium text-gray-700">State</label><select name="state" class="w-full mt-1 px-4 py-3 border rounded-xl">
   {% for s in ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'] %}
-  <option value="{{ s }}" {{ 'selected' if data.state==s }}>{{ s }}</option>
+  <option value="{{ s }}" {% if (data.state and data.state==s) or (not data.state and s=='VA') %}selected{% endif %}>{{ s }}</option>
   {% endfor %}</select></div>
 <div><label class="block text-sm font-medium text-gray-700">ZIP Code</label><input type="text" name="zip_code" value="{{ data.zip_code or '' }}" pattern="[0-9]{5}" maxlength="5" placeholder="12345" required class="w-full mt-1 px-4 py-3 border rounded-xl"></div>
 </div>
@@ -109,7 +115,7 @@
 <!-- Step 3: Financial Details -->
 <h2 class="text-xl font-semibold mb-6 flex items-center gap-2"><i class="fas fa-chart-line text-accent"></i> Financial Details</h2>
 <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6 text-sm text-yellow-800">
-  <i class="fas fa-lock mr-2"></i> All data is encrypted in transit. Your income and credit information is used only for underwriting.
+  <i class="fas fa-lock mr-2"></i> Your credit report will be pulled securely from Experian to verify this information. Soft inquiry only.
 </div>
 <div class="grid md:grid-cols-2 gap-6">
 <div><label class="block text-sm font-medium text-gray-700">Annual Gross Income ($)</label><input type="number" name="annual_income" value="{{ data.annual_income or '' }}" min="0" step="500" placeholder="e.g. 65000" required class="w-full mt-1 px-4 py-3 border rounded-xl"></div>
@@ -130,45 +136,17 @@
   </select></div>
 <div><label class="block text-sm font-medium text-gray-700">Next Pay Date</label><input type="date" name="next_pay_date" value="{{ data.next_pay_date or '' }}" class="w-full mt-1 px-4 py-3 border rounded-xl"></div>
 <div><label class="block text-sm font-medium text-gray-700">Total Monthly Debt Payments ($)</label><input type="number" name="monthly_debt" value="{{ data.monthly_debt or '' }}" min="0" step="1" placeholder="e.g. 500" required class="w-full mt-1 px-4 py-3 border rounded-xl"><p class="text-xs text-gray-400 mt-1">Credit cards, car loans, student loans, child support, etc.</p></div>
-<div><label class="block text-sm font-medium text-gray-700">Credit Score Range</label>
-  <select name="credit_score_bucket" class="w-full mt-1 px-4 py-3 border rounded-xl">
-    <option value="800">800-850 (Excellent)</option>
-    <option value="740" selected>740-799 (Very Good)</option>
-    <option value="670">670-739 (Good)</option>
-    <option value="580">580-669 (Fair)</option>
-    <option value="500">Below 580 (Poor)</option>
-    <option value="0">I don't know</option>
-  </select></div>
-<div><label class="block text-sm font-medium text-gray-700">Estimated Credit Card Utilization</label>
-  <select name="utilization" class="w-full mt-1 px-4 py-3 border rounded-xl">
-    <option value="0.1">0-10% (Very Low)</option>
-    <option value="0.25">11-30% (Low)</option>
-    <option value="0.45">31-50% (Moderate)</option>
-    <option value="0.65">51-70% (High)</option>
-    <option value="0.85">71-100% (Maxed Out)</option>
-  </select><p class="text-xs text-gray-400 mt-1">How much of your available credit do you use each month?</p></div>
-<div><label class="block text-sm font-medium text-gray-700">Active Credit Lines</label>
-  <select name="num_credit_lines" class="w-full mt-1 px-4 py-3 border rounded-xl">
-    <option value="0">None</option>
-    <option value="2">1-2</option>
-    <option value="5" selected>3-6</option>
-    <option value="10">7-12</option>
-    <option value="15">13+</option>
-  </select></div>
-<div><label class="block text-sm font-medium text-gray-700">Derogatory Marks (past 7 years)</label>
-  <select name="num_derogatory" class="w-full mt-1 px-4 py-3 border rounded-xl">
-    <option value="0">None</option>
-    <option value="1">1</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="5">4+</option>
-  </select><p class="text-xs text-gray-400 mt-1">Late payments, collections, charge-offs, etc.</p></div>
-<div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700">Bank Account for Direct Deposit</label>
-  <div class="grid md:grid-cols-2 gap-4 mt-1">
-  <div><input type="text" name="bank_routing" value="{{ data.bank_routing or '' }}" placeholder="Routing Number" pattern="[0-9]{9}" maxlength="9" required class="w-full px-4 py-3 border rounded-xl"></div>
-  <div><input type="text" name="bank_account" value="{{ data.bank_account or '' }}" placeholder="Account Number" required class="w-full px-4 py-3 border rounded-xl"></div>
+<div class="md:col-span-2">
+  <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+    <p class="text-sm font-medium text-gray-700 mb-2"><i class="fas fa-database mr-2 text-accent"></i> Credit data will be pulled automatically:</p>
+    <ul class="text-xs text-gray-500 space-y-1">
+      <li><i class="fas fa-check-circle text-green-500 mr-1"></i> Credit score & FICO factors</li>
+      <li><i class="fas fa-check-circle text-green-500 mr-1"></i> Debt-to-income ratio</li>
+      <li><i class="fas fa-check-circle text-green-500 mr-1"></i> Credit utilization rate</li>
+      <li><i class="fas fa-check-circle text-green-500 mr-1"></i> Derogatory marks & payment history</li>
+      <li><i class="fas fa-check-circle text-green-500 mr-1"></i> Active credit lines & account age</li>
+    </ul>
   </div>
-  <p class="text-xs text-gray-400 mt-1">For loan disbursement and auto-payments. Standard ACH only.</p>
 </div>
 </div>
 <div class="mt-8 flex justify-between">
@@ -177,7 +155,7 @@
 </div>
 
 {% elif step == 4 %}
-<!-- Step 4: Loan Details & Documents -->
+<!-- Step 4: Loan Details & Plaid Connect -->
 <h2 class="text-xl font-semibold mb-6 flex items-center gap-2"><i class="fas fa-file-invoice-dollar text-accent"></i> Loan Request</h2>
 <div class="grid md:grid-cols-2 gap-6">
 <div><label class="block text-sm font-medium text-gray-700">Desired Loan Amount ($)</label>
@@ -210,10 +188,33 @@
   </select></div>
 </div>
 
+<!-- Plaid Connect Section -->
+<div class="border-t border-gray-200 mt-8 pt-6">
+<h3 class="font-semibold text-lg mb-4 flex items-center gap-2"><i class="fas fa-university text-accent"></i> Connect Your Bank <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Optional — Better Rates</span></h3>
+<p class="text-sm text-gray-500 mb-4">Connect your bank account for cash flow analysis. This helps us offer you a <strong>lower rate</strong> and <strong>higher approval odds</strong> — especially if you have limited credit history.</p>
+<div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
+  <div id="plaid-connect-area" class="text-center">
+    <div id="plaid-connected" class="{{ '' if data.plaid_connected else 'hidden' }}">
+      <i class="fas fa-check-circle text-green-500 text-4xl mb-2"></i>
+      <p class="text-sm font-medium text-green-700 mb-2">Bank account connected successfully!</p>
+      <p class="text-xs text-gray-500">Transactions will be analyzed for cash flow scoring.</p>
+      <input type="hidden" name="plaid_public_token" id="plaidPublicToken" value="{{ data.plaid_public_token or '' }}">
+    </div>
+    <div id="plaid-not-connected" class="{{ 'hidden' if data.plaid_connected else '' }}">
+      <button type="button" id="plaid-link-btn" onclick="openPlaidLink()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold transition">
+        <i class="fas fa-link mr-2"></i> Connect Bank Account
+      </button>
+      <p class="text-xs text-gray-400 mt-2">Securely linked via Plaid — read-only access</p>
+      <p class="text-xs text-gray-400">Works with 12,000+ US banks & credit unions</p>
+    </div>
+  </div>
+</div>
+</div>
+
 <!-- Document Upload Section -->
 <div class="border-t border-gray-200 mt-8 pt-6">
-<h3 class="font-semibold text-lg mb-4 flex items-center gap-2"><i class="fas fa-upload text-accent"></i> Document Upload</h3>
-<p class="text-sm text-gray-500 mb-4">Upload at least 2 of the following to expedite your application review.</p>
+<h3 class="font-semibold text-lg mb-4 flex items-center gap-2"><i class="fas fa-upload text-accent"></i> Document Upload <span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Optional</span></h3>
+<p class="text-sm text-gray-500 mb-4">Upload documents to expedite verification.</p>
 <div class="grid md:grid-cols-3 gap-4">
 <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-accent transition cursor-pointer" onclick="document.getElementById('paystub').click()">
   <i class="fas fa-file-invoice text-3xl text-gray-300 mb-2"></i>
@@ -238,7 +239,8 @@
 
 <!-- Disclosures -->
 <div class="bg-gray-50 rounded-xl p-4 mt-6 text-xs text-gray-600 space-y-2">
-<label class="flex items-start gap-3"><input type="checkbox" name="consent_credit" required class="mt-1"> <span>I authorize PalmFi to obtain my credit report from one or more consumer reporting agencies to verify my identity and evaluate my creditworthiness. This will appear as a <strong>soft inquiry</strong> on my credit report.</span></label>
+<label class="flex items-start gap-3"><input type="checkbox" name="consent_credit" required class="mt-1"> <span>I authorize SunCredit to obtain my credit report from one or more consumer reporting agencies (Experian, TransUnion) to verify my identity and evaluate my creditworthiness. I understand this is a <strong>soft inquiry</strong> and will not affect my credit score.</span></label>
+<label class="flex items-start gap-3"><input type="checkbox" name="consent_bureau" required class="mt-1"> <span>I certify that the SSN provided is my own and I authorize SunCredit to use it for identity verification and credit reporting purposes in accordance with the Fair Credit Reporting Act (FCRA).</span></label>
 <label class="flex items-start gap-3"><input type="checkbox" name="consent_terms" required class="mt-1"> <span>I agree to the <a href="/terms" target="_blank" class="text-accent underline">Terms & Conditions</a> and <a href="/privacy" target="_blank" class="text-accent underline">Privacy Policy</a>.</span></label>
 <label class="flex items-start gap-3"><input type="checkbox" name="consent_electronic" required class="mt-1"> <span>I consent to receive electronic disclosures and communications related to this application.</span></label>
 </div>
@@ -251,14 +253,14 @@
 {% elif step == 5 %}
 <!-- Step 5: Review -->
 <h2 class="text-xl font-semibold mb-6 flex items-center gap-2"><i class="fas fa-search text-accent"></i> Review Your Application</h2>
-<p class="text-sm text-gray-500 mb-6">Please verify all information before submitting. You cannot edit after submission.</p>
+<p class="text-sm text-gray-500 mb-6">Please verify all information before submitting.</p>
 <div class="bg-gray-50 rounded-xl p-6 space-y-5">
   <div class="border-b pb-4">
     <h4 class="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-3">Identity</h4>
     <div class="grid grid-cols-2 gap-3 text-sm">
       <div><span class="text-gray-500">Name:</span> <span class="font-semibold">{{ data.first_name }} {{ data.last_name }}</span></div>
       <div><span class="text-gray-500">DOB:</span> <span>{{ data.date_of_birth }}</span></div>
-      <div><span class="text-gray-500">SSN (last 4):</span> <span>XXX-XX-{{ data.ssn_last4 }}</span></div>
+      <div><span class="text-gray-500">SSN:</span> <span>XXX-XX-{{ (data.ssn[-4:] if data.ssn else 'XXXX') }}</span></div>
       <div><span class="text-gray-500">Phone:</span> <span>{{ data.phone }}</span></div>
     </div>
   </div>
@@ -277,7 +279,7 @@
     <div class="grid grid-cols-2 gap-3 text-sm">
       <div><span class="text-gray-500">Annual Income:</span> <span class="font-semibold">${{ "{:,.0f}".format(data.annual_income|float) }}</span></div>
       <div><span class="text-gray-500">Monthly Debt:</span> <span>${{ "{:,.0f}".format(data.monthly_debt|float) }}</span></div>
-      <div><span class="text-gray-500">Bank:</span> <span>****{{ (data.bank_account[-4:] if data.bank_account else 'N/A') }}</span></div>
+      <div><span class="text-gray-500">Bank:</span> <span>{{ '✅ Connected' if data.plaid_connected else 'Not connected (optional)' }}</span></div>
     </div>
   </div>
   <div>
@@ -286,18 +288,16 @@
       <div><span class="text-gray-500">Amount:</span> <span class="font-bold text-lg text-accent">${{ "{:,.0f}".format(data.loan_amount|float) }}</span></div>
       <div><span class="text-gray-500">Term:</span> <span>{{ data.term_months }} months</span></div>
       <div><span class="text-gray-500">Purpose:</span> <span>{{ data.loan_purpose.replace('_',' ').title() }}</span></div>
-      <div><span class="text-gray-500">Documents:</span><span class="text-green-600"><i class="fas fa-check-circle"></i> Ready to upload</span></div>
     </div>
   </div>
   <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4 flex items-center justify-between">
     <div class="flex items-center gap-2 text-sm">
       <i class="fas fa-university text-blue-500"></i>
-      <span class="text-blue-800">Connect your bank for instant cash flow analysis — <strong>better rates, higher approval odds</strong></span>
+      <span class="text-blue-800">Your credit report will be pulled from Experian/TransUnion via soft inquiry</span>
     </div>
-    <a href="/connect-bank" class="text-xs bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg font-medium whitespace-nowrap">Connect Bank</a>
   </div>
   <div class="bg-gray-100 rounded-lg p-3 mt-4">
-    <p class="text-xs text-gray-500"><i class="fas fa-info-circle mr-1"></i> By clicking "Submit Application", you certify that all information above is true and complete. False statements may result in denial or legal action.</p>
+    <p class="text-xs text-gray-500"><i class="fas fa-info-circle mr-1"></i> By clicking "Submit", you authorize a soft credit inquiry and certify all information is true.</p>
   </div>
 </div>
 <div class="mt-8 flex justify-between">
@@ -308,5 +308,38 @@
 
 </form>
 </div>
-<footer class="bg-gray-100 py-8"><div class="text-center text-gray-500 text-sm"><p>&copy; 2026 PalmFi — NMLS #000000 | Equal Opportunity Lender</p></div></footer>
+
+<!-- Plaid Link Script -->
+<script>
+var plaidLinkHandler = null;
+
+function openPlaidLink() {
+  if (plaidLinkHandler) {
+    plaidLinkHandler.open();
+    return;
+  }
+  // Get link token from server
+  fetch('/api/plaid/link-token')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.link_token) {
+        plaidLinkHandler = Plaid.create({
+          token: data.link_token,
+          onSuccess: function(public_token, metadata) {
+            document.getElementById('plaidPublicToken').value = public_token;
+            document.getElementById('plaid-not-connected').classList.add('hidden');
+            document.getElementById('plaid-connected').classList.remove('hidden');
+          },
+          onExit: function(err, metadata) {
+            if (err != null) { console.log('Plaid exit:', err); }
+          },
+        });
+        plaidLinkHandler.open();
+      }
+    })
+    .catch(function(err) { console.log('Could not get link token:', err); });
+}
+</script>
+
+<footer class="bg-gray-100 py-8"><div class="text-center text-gray-500 text-sm"><p>&copy; 2026 SunCredit — Equal Opportunity Lender | NMLS #000000</p></div></footer>
 </body></html>

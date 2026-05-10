@@ -45,6 +45,7 @@ def init_db():
             stripe_customer_id TEXT DEFAULT '',
             cash_flow_data TEXT DEFAULT '{}',
             cash_flow_score INTEGER DEFAULT 0,
+            bureau_data TEXT DEFAULT '{}',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             last_login TIMESTAMP
         );
@@ -80,7 +81,8 @@ def init_db():
             monthly_payment REAL NOT NULL,
             origination_fee REAL NOT NULL,
             remaining_balance REAL NOT NULL,
-            status TEXT DEFAULT 'active',
+            status TEXT DEFAULT 'approved',
+            disbursement_status TEXT DEFAULT 'pending',
             disbursed_at TIMESTAMP,
             next_payment_date TEXT,
             paid_off_at TIMESTAMP,
@@ -183,6 +185,18 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     """)
+
+    # Migration: add bureau_data column (safe to run on existing DB)
+    try:
+        conn.execute("ALTER TABLE borrowers ADD COLUMN bureau_data TEXT DEFAULT '{}'")
+    except Exception:
+        pass  # Column already exists
+
+    # Migration: add disbursement_status column to loans table
+    try:
+        conn.execute("ALTER TABLE loans ADD COLUMN disbursement_status TEXT DEFAULT 'pending'")
+    except Exception:
+        pass  # Column already exists
 
     conn.commit()
     conn.close()

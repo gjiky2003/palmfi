@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PalmFi — Launch Dashboard</title>
+<title>PalmFi — Launch Dashboard v2</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; }
@@ -27,9 +27,10 @@ h1 span { color: #059669; }
 .item .checkbox { width: 20px; height: 20px; border: 2px solid #64748b; border-radius: 4px; flex-shrink: 0; margin-top: 2px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; }
 .item.done { opacity: 0.7; }
 .item.done .checkbox { background: #10b981; border-color: #10b981; }
-.item.running .checkbox { background: #f59e0b; border-color: #f59e0b; animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 .item.done .checkbox::after { content: "✓"; color: #0f172a; font-weight: bold; }
+.item.running .checkbox { background: #f59e0b; border-color: #f59e0b; animation: pulse 2s infinite; }
+.item.running .checkbox::after { content: "⟳"; color: #0f172a; font-weight: bold; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 .item .details { flex: 1; }
 .item .details .title { font-weight: 600; font-size: 0.95rem; }
 .item .details .desc { color: #94a3b8; font-size: 0.85rem; margin-top: 2px; }
@@ -49,13 +50,14 @@ h1 span { color: #059669; }
 .notes ul { list-style: none; }
 .notes ul li { padding: 6px 0; color: #94a3b8; font-size: 0.88rem; }
 .notes ul li::before { content: "› "; color: #059669; font-weight: bold; }
+.emphasis { color: #fbbf24; font-weight: 600; }
 @media (max-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>🌴 <span>PalmFi</span> Launch Dashboard</h1>
-  <p class="subtitle">Complete operational checklist for the AI-native lending platform. Track your progress from LLC → Live.</p>
+  <h1>🌴 <span>PalmFi</span> Launch Dashboard v2</h1>
+  <p class="subtitle">Code built ✅ — now you need to do the manual legal &amp; licensing work. Track everything here.</p>
 
   <div class="stats-grid">
     <div class="stat-card">
@@ -76,24 +78,95 @@ h1 span { color: #059669; }
     </div>
   </div>
 
-  <!-- Phase A: Legal & Banking -->
+  <!-- Phase 0: Software Built -->
   <div class="phase">
-    <h2>📋 Phase A — Legal & Banking <span class="badge">1-2 weeks</span></h2>
-    <div class="checklist" id="phaseA">
-      <div class="item running">
+    <h2>🤖 Phase 0 — Software Built (by Hermes) <span class="badge">done</span></h2>
+    <div class="checklist" id="phase0">
+      <div class="item done">
         <div class="checkbox"></div>
         <div class="details">
-          <div class="title">Form PalmFi Lending LLC (Delaware)</div>
-          <div class="desc">File Certificate of Formation with Delaware Division of Corporations</div>
+          <div class="title">XGBoost Underwriting Model</div>
+          <div class="desc">Trained on 100K LendingClub records. AUC 0.678. 12 features + FICO gap penalty. SHAP explainer built in.</div>
         </div>
-        <div class="status-badge">In Progress</div>
+        <div class="status-badge">✓ Done</div>
+      </div>
+      <div class="item done">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Two-Stage Reconsideration Engine</div>
+          <div class="desc">Three-zone decision flow (auto-approve ≤50, consideration 51-60, decline &gt;60). Plaid cash flow as second chance.</div>
+        </div>
+        <div class="status-badge">✓ Done</div>
+      </div>
+      <div class="item done">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Gating Rules (Hard Cuts + Suppressions)</div>
+          <div class="desc">10 hard cuts (age, SSN fraud, bankruptcy, OFAC, death, state, amount, term). 7 suppressions (velocity, address, income, inquiries, ZIP, timing, new account). 3 soft overrides.</div>
+        </div>
+        <div class="status-badge">✓ Done</div>
+      </div>
+      <div class="item done">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">LLM Document Extractor (DeepSeek-ready)</div>
+          <div class="desc">Self-employed applicant document analysis. 4 mock profiles. DeepSeek API stub ready — set DEEPSEEK_API_KEY to activate.</div>
+        </div>
+        <div class="status-badge">✓ Done</div>
+      </div>
+      <div class="item done">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">LLM Manual Review Assistant (DeepSeek-ready)</div>
+          <div class="desc">AI underwriter copilot for human review queue. Structured recommendations: risk factors, strengths, red flags, fraud probability, borrower questions.</div>
+        </div>
+        <div class="status-badge">✓ Done</div>
+      </div>
+      <div class="item done">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">SHAP Adverse Action + ECOA Compliance</div>
+          <div class="desc">SHAP-based reason code generation. Full Reg B-compliant HTML adverse action notice with score disclosure, ECOA/FCRA notices.</div>
+        </div>
+        <div class="status-badge">✓ Done</div>
+      </div>
+      <div class="item done">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">BISG Fair Lending Analyzer</div>
+          <div class="desc">Bayesian Improved Surname Geocoding. 65+ surname table, census tract demographics, 4/5th rule, proxy feature analysis. Quarterly HTML report with attestation.</div>
+        </div>
+        <div class="status-badge">✓ Done</div>
+      </div>
+      <div class="item done">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Flask Web App + All Routes + Templates</div>
+          <div class="desc">Second-look page, borrower under-review page, admin manual review queue with LLM suggestions. Full Tailwind CSS UI.</div>
+        </div>
+        <div class="status-badge">✓ Done</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase A: Legal & Banking -->
+  <div class="phase">
+    <h2>📋 Phase A — Legal &amp; Banking <span class="badge">1-2 weeks</span></h2>
+    <div class="checklist" id="phaseA">
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Form Virginia LLC (recommended) or Delaware</div>
+          <div class="desc">File Articles of Organization with Virginia SCC (or Delaware Division of Corporations if you prefer). Virginia is cheaper if you're a VA resident.</div>
+          <a class="link" href="VA_LLC_FORMATION_PACKET.md">📄 VA formation guide in launch/ folder</a>
+        </div>
+        <div class="status-badge">Pending</div>
       </div>
       <div class="sub-items" id="subA1">
-        <div class="sub-item"><span class="dot gray"></span> Choose LLC name — "PalmFi Lending LLC"</div>
-        <div class="sub-item"><span class="dot gray"></span> File Certificate of Formation (online, $90 filing fee)</div>
-        <div class="sub-item"><span class="dot gray"></span> Get Registered Agent (Northwest / LegalZoom / IncFile ~$50-100/yr)</div>
-        <div class="sub-item"><span class="dot gray"></span> Receive filed Certificate of Formation (1-3 business days)</div>
-        <div class="sub-item"><span class="dot gray"></span> Wait for filing confirmation email</div>
+        <div class="sub-item"><span class="dot gray"></span> Choose business name — "PalmFi Lending LLC" or similar</div>
+        <div class="sub-item"><span class="dot gray"></span> File Articles of Organization (online, ~$100)</div>
+        <div class="sub-item"><span class="dot gray"></span> Get Registered Agent (optional for VA, required for DE)</div>
+        <div class="sub-item"><span class="dot gray"></span> Wait for filing confirmation (1-3 business days)</div>
       </div>
       <div class="item">
         <div class="checkbox"></div>
@@ -109,6 +182,16 @@ h1 span { color: #059669; }
         <div class="details">
           <div class="title">Create Operating Agreement</div>
           <div class="desc">LLC operating agreement — defines ownership, management structure, member responsibilities</div>
+          <a class="link" href="OPERATING_AGREEMENT.md">📄 Draft in launch/ folder</a>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">File BOI Report with FinCEN</div>
+          <div class="desc">Beneficial Ownership Information report — federal requirement since 2024. $500/day penalty if missed. Must file within 90 days of formation.</div>
+          <a class="link" href="https://www.fincen.gov/boi" target="_blank">fincen.gov/boi</a>
         </div>
         <div class="status-badge">Pending</div>
       </div>
@@ -123,9 +206,10 @@ h1 span { color: #059669; }
       </div>
       <div class="sub-items">
         <div class="sub-item"><span class="dot gray"></span> Apply for Mercury account</div>
-        <div class="sub-item"><span class="dot gray"></span> Wait for approval (usually 1-3 business days)</div>
-        <div class="sub-item"><span class="dot gray"></span> Deposit initial capital (recommended: $10,000-$25,000)</div>
+        <div class="sub-item"><span class="dot gray"></span> Wait for approval (1-3 business days)</div>
+        <div class="sub-item"><span class="dot gray"></span> Deposit initial capital (recommended: $15,000-$25,000)</div>
         <div class="sub-item"><span class="dot gray"></span> Order debit card + set up online banking</div>
+        <div class="sub-item"><span class="dot gray"></span> Note routing + account numbers for Stripe payouts</div>
       </div>
       <div class="item">
         <div class="checkbox"></div>
@@ -141,7 +225,7 @@ h1 span { color: #059669; }
         <div class="sub-item"><span class="dot gray"></span> Link Mercury bank account for payouts</div>
         <div class="sub-item"><span class="dot gray"></span> Get live publishable key (pk_live_xxx)</div>
         <div class="sub-item"><span class="dot gray"></span> Get live secret key (sk_live_xxx)</div>
-        <div class="sub-item"><span class="dot gray"></span> Configure webhook: <code>https://palm.ngrok.app/stripe/webhook</code></div>
+        <div class="sub-item"><span class="dot gray"></span> Configure webhook: <code>https://yourdomain.com/stripe/webhook</code></div>
         <div class="sub-item"><span class="dot gray"></span> Save webhook signing secret (whsec_xxx)</div>
       </div>
     </div>
@@ -149,13 +233,14 @@ h1 span { color: #059669; }
 
   <!-- Phase B: Licensing & Compliance -->
   <div class="phase">
-    <h2>🔒 Phase B — Licensing & Compliance <span class="badge">2-6 weeks</span></h2>
+    <h2>🔒 Phase B — Licensing &amp; Compliance <span class="badge">2-6 weeks</span></h2>
     <div class="checklist" id="phaseB">
       <div class="item">
         <div class="checkbox"></div>
         <div class="details">
-          <div class="title">Create ALECS Account (Texas OCCC Portal)</div>
-          <div class="desc">ALECS = Automated Licensing and Electronic filing System — occc.texas.gov/alecs</div>
+          <div class="title">Create SCC Online Account (Virginia BFI Portal)</div>
+          <div class="desc">Virginia SCC Bureau of Financial Institutions portal — cis.scc.virginia.gov</div>
+          <a class="link" href="https://cis.scc.virginia.gov" target="_blank">cis.scc.virginia.gov</a>
         </div>
         <div class="status-badge">Pending</div>
       </div>
@@ -171,7 +256,7 @@ h1 span { color: #059669; }
         <div class="checkbox"></div>
         <div class="details">
           <div class="title">Prepare Compliance Business Plan</div>
-          <div class="desc">Required by OCCC — includes underwriting methodology, compliance program, collections policy</div>
+          <div class="desc">Required by SCC BFI — includes underwriting methodology, compliance program, collections policy</div>
           <a class="link" href="COMPLIANCE_BUSINESS_PLAN.md">📄 Draft ready in launch/ folder</a>
         </div>
         <div class="status-badge">Pending</div>
@@ -180,7 +265,7 @@ h1 span { color: #059669; }
         <div class="checkbox"></div>
         <div class="details">
           <div class="title">Draft Proposed Loan Contract (Plain Language)</div>
-          <div class="desc">Must comply with TAC Chapter 90 — clear, simple English, no legal jargon</div>
+          <div class="desc">Must comply with Virginia plain language rules — clear, simple English</div>
           <a class="link" href="LOAN_CONTRACT.md">📄 Draft ready in launch/ folder</a>
         </div>
         <div class="status-badge">Pending</div>
@@ -189,7 +274,7 @@ h1 span { color: #059669; }
         <div class="checkbox"></div>
         <div class="details">
           <div class="title">Secure Surety Bond</div>
-          <div class="desc">$25k-$100k bond — required by OCCC. Shop at suretybonds.com. ~$250-$500/yr</div>
+          <div class="desc">$25k bond — required by Virginia SCC BFI. ~$250-$500/yr</div>
           <a class="link" href="SURETY_BOND_GUIDE.md">📄 Guide in launch/ folder</a>
         </div>
         <div class="status-badge">Pending</div>
@@ -197,24 +282,25 @@ h1 span { color: #059669; }
       <div class="item">
         <div class="checkbox"></div>
         <div class="details">
-          <div class="title">Submit Texas OCCC License Application</div>
-          <div class="desc">File through ALECS — includes application fee ($1,000), bond, business plan, credit check, loan contract</div>
+          <div class="title"><span class="emphasis">Submit Virginia SCC BFI License Application</span></div>
+          <div class="desc">The big one. File through SCC portal — fee ($750), bond, business plan, background check, loan contract. 6-8 week review.</div>
+          <a class="link" href="VIRGINIA_LICENSING_RESEARCH.md">📄 Full research doc in launch/ folder</a>
         </div>
         <div class="status-badge">Pending</div>
       </div>
       <div class="sub-items">
-        <div class="sub-item"><span class="dot gray"></span> Pay $1,000 application fee</div>
+        <div class="sub-item"><span class="dot gray"></span> Pay $750 application fee</div>
         <div class="sub-item"><span class="dot gray"></span> Upload compliance business plan</div>
         <div class="sub-item"><span class="dot gray"></span> Upload proposed loan contract</div>
         <div class="sub-item"><span class="dot gray"></span> Upload surety bond</div>
         <div class="sub-item"><span class="dot gray"></span> Submit principal background + credit check</div>
-        <div class="sub-item"><span class="dot gray"></span> Wait for OCCC review (4-6 weeks)</div>
+        <div class="sub-item"><span class="dot gray"></span> Wait for SCC BFI review (6-8 weeks)</div>
       </div>
       <div class="item">
         <div class="checkbox"></div>
         <div class="details">
           <div class="title">Parallel: Partner with Licensed Lender</div>
-          <div class="desc">Send outreach to 10+ target lenders — operating as service provider is faster than own license</div>
+          <div class="desc">Send outreach to 10+ target lenders. Operating as service provider under their license is faster than getting your own.</div>
           <a class="link" href="LENDER_PARTNERSHIP_OUTREACH.md">📄 Outreach template + target list</a>
         </div>
         <div class="status-badge">Pending</div>
@@ -235,36 +321,51 @@ h1 span { color: #059669; }
   <div class="phase">
     <h2>⚙️ Phase C — Platform Configuration <span class="badge">1-2 weeks</span></h2>
     <div class="checklist" id="phaseC">
-      <div class="item">
+      <div class="item running">
         <div class="checkbox"></div>
         <div class="details">
-          <div class="title">Configure Live Stripe Keys on Platform</div>
-          <div class="desc">Go to /admin/settings → paste pk_live_xxx, sk_live_xxx, webhook secret → click Apply</div>
+          <div class="title">Deploy App to Render.com or Fly.io</div>
+          <div class="desc">Flask + SQLite + XGBoost needs a real server. <span class="emphasis">Not deployable on Cloudflare Workers.</span> Render ($7/mo) or Fly.io ($5/mo).</div>
         </div>
-        <div class="status-badge">Pending</div>
-      </div>
-      <div class="item">
-        <div class="checkbox"></div>
-        <div class="details">
-          <div class="title">Set Up KYC (Stripe Identity)</div>
-          <div class="desc">Already integrated — go to /admin/settings → set KYC provider to 'stripe-identity'</div>
-        </div>
-        <div class="status-badge">Pending</div>
-      </div>
-      <div class="item">
-        <div class="checkbox"></div>
-        <div class="details">
-          <div class="title">Configure Email (SendGrid)</div>
-          <div class="desc">Go to /admin/settings → paste SendGrid API key, set from address → Apply</div>
-        </div>
-        <div class="status-badge">Pending</div>
+        <div class="status-badge">Needs Doing</div>
       </div>
       <div class="item">
         <div class="checkbox"></div>
         <div class="details">
           <div class="title">Set Up Custom Domain + HTTPS</div>
-          <div class="desc">Buy domain (palmfi.com), point DNS, Nginx + Let's Encrypt or Cloudflare Tunnel</div>
-          <a class="link" href="DOMAIN_SETUP.md">📄 Guide in launch/ folder</a>
+          <div class="desc">Buy domain (palmfi.com), point DNS to Render/Fly, enable auto-SSL</div>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Configure Live Stripe Keys in Admin Panel</div>
+          <div class="desc">Set STRIPE_SECRET_KEY env var. Then go to /admin/settings → paste keys → Apply.</div>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Set Up Plaid Live Mode</div>
+          <div class="desc">Set PLAID_CLIENT_ID + PLAID_SECRET env vars. Currently in mock mode (generates realistic fake data).</div>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Activate DeepSeek API (for LLM features)</div>
+          <div class="desc">Set DEEPSEEK_API_KEY env var. Powers the self-employed document extractor and manual review assistant. Currently in mock mode.</div>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Set Up Bureau API (Stipula or similar)</div>
+          <div class="desc">Set STIPULA_API_KEY env var. Currently in mock mode (deterministic from SSN hash).</div>
         </div>
         <div class="status-badge">Pending</div>
       </div>
@@ -272,7 +373,7 @@ h1 span { color: #059669; }
         <div class="checkbox"></div>
         <div class="details">
           <div class="title">Run Full E2E Test with Live Credentials</div>
-          <div class="desc">Test complete flow: register → apply → score → KYC → fund → make payment</div>
+          <div class="desc">Test complete flow: register → apply → XGBoost score → second look (if needed) → KYC → fund → make payment</div>
         </div>
         <div class="status-badge">Pending</div>
       </div>
@@ -281,7 +382,7 @@ h1 span { color: #059669; }
 
   <!-- Phase D: Capital & First Loans -->
   <div class="phase">
-    <h2>💰 Phase D — Capital & First Loans <span class="badge">2-4 weeks</span></h2>
+    <h2>💰 Phase D — Capital &amp; First Loans <span class="badge">2-4 weeks</span></h2>
     <div class="checklist" id="phaseD">
       <div class="item">
         <div class="checkbox"></div>
@@ -295,7 +396,7 @@ h1 span { color: #059669; }
         <div class="checkbox"></div>
         <div class="details">
           <div class="title">Find Pilot Borrowers (5-10 people)</div>
-          <div class="desc">Friends, family, network — explain it's a real loan with real terms</div>
+          <div class="desc">Friends, family, network — explain it's a real loan with real terms. $500-$5,000, 6-24 months.</div>
           <a class="link" href="PILOT_LOANS_GUIDE.md">📄 Guide in launch/ folder</a>
         </div>
         <div class="status-badge">Pending</div>
@@ -304,7 +405,7 @@ h1 span { color: #059669; }
         <div class="checkbox"></div>
         <div class="details">
           <div class="title">Fund First Loan End-to-End</div>
-          <div class="desc">Borrower registers → applies → IDs → approved → funded → first payment collected</div>
+          <div class="desc">Borrower registers → applies → XGBoost scores → approved → KYC → funded → first payment collected</div>
         </div>
         <div class="status-badge">Pending</div>
       </div>
@@ -320,8 +421,25 @@ h1 span { color: #059669; }
       <div class="item">
         <div class="checkbox"></div>
         <div class="details">
+          <div class="title">Run Quarterly BISG Fair Lending Report</div>
+          <div class="desc">Run <code>python3 -c \"from compliance.bisg_analyzer import BISGAnalyzer, FairLendingReport; ...\"</code> — generates regulator-grade HTML report.</div>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Retrain XGBoost Model with Real Performance Data</div>
+          <div class="desc">After 100+ loans, retrain using your own default data instead of LendingClub's. Run <code>python3 underwriting/train_xgb_model.py</code>.</div>
+        </div>
+        <div class="status-badge">Pending</div>
+      </div>
+      <div class="item">
+        <div class="checkbox"></div>
+        <div class="details">
           <div class="title">Raise Debt Facility from Investor</div>
           <div class="desc">Use pitch deck + 10-loan portfolio data to raise $100k-$250k facility</div>
+          <a class="link" href="PITCH_DECK_OUTLINE.md">📄 Pitch deck in launch/ folder</a>
         </div>
         <div class="status-badge">Pending</div>
       </div>
@@ -334,20 +452,19 @@ h1 span { color: #059669; }
     <ul>
       <li><strong>README.html</strong> — Interactive checklist (this page)</li>
       <li><strong>OPERATING_AGREEMENT.md</strong> — LLC operating agreement template</li>
-      <li><strong>COMPLIANCE_BUSINESS_PLAN.md</strong> — OCCC license application business plan</li>
-      <li><strong>LOAN_CONTRACT.md</strong> — Plain-language loan contract (TAC Ch 90 compliant)</li>
-      <li><strong>PITCH_DECK_OUTLINE.md</strong> — 14-slide investor deck content</li>
-      <li><strong>PalmFi_Pitch_Deck.pptx</strong> — Actual presentation file (49KB)</li>
-      <li><strong>PRIVATE_PLACEMENT_MEMO.md</strong> — Fundraising memo draft</li>
-      <li><strong>PILOT_LOANS_GUIDE.md</strong> — First 10 loans operations guide + budget</li>
-      <li><strong>PILOT_PORTFOLIO_TRACKER.csv</strong> — Spreadsheet to log every loan</li>
-      <li><strong>PORTFOLIO_SUMMARY.md</strong> — Summary table for investor presentations</li>
-      <li><strong>DOMAIN_SETUP.md</strong> — Nginx, SSL, Cloudflare Tunnel guide</li>
-      <li><strong>TEXAS_LICENSING_RESEARCH.md</strong> — Detailed licensing requirements</li>
+      <li><strong>VA_LLC_FORMATION_PACKET.md</strong> — Virginia LLC formation step-by-step</li>
+      <li><strong>COMPLIANCE_BUSINESS_PLAN.md</strong> — SCC BFI license application business plan</li>
+      <li><strong>LOAN_CONTRACT.md</strong> — Plain-language loan contract</li>
+      <li><strong>VIRGINIA_LICENSING_RESEARCH.md</strong> — Full VA SCC BFI license requirements</li>
       <li><strong>SURETY_BOND_GUIDE.md</strong> — Where to buy bond, pricing, process</li>
-      <li><strong>KYC_VENDOR_EVAL.md</strong> — Stripe Identity vs Persona vs Onfido</li>
       <li><strong>LENDER_PARTNERSHIP_OUTREACH.md</strong> — Target list + email template</li>
       <li><strong>COMPLIANCE_MANUAL_OUTLINE.md</strong> — 10-chapter compliance manual outline</li>
+      <li><strong>PITCH_DECK_OUTLINE.md</strong> + <strong>PalmFi_Pitch_Deck.pptx</strong> — Investor deck</li>
+      <li><strong>PRIVATE_PLACEMENT_MEMO.md</strong> — Fundraising memo draft</li>
+      <li><strong>PILOT_LOANS_GUIDE.md</strong> — First 10 loans operations guide</li>
+      <li><strong>PILOT_PORTFOLIO_TRACKER.csv</strong> — Spreadsheet to log every loan</li>
+      <li><strong>DOMAIN_SETUP.md</strong> — Nginx, SSL, Cloudflare Tunnel guide</li>
+      <li><strong>KYC_VENDOR_EVAL.md</strong> — Stripe Identity vs Persona vs Onfido</li>
     </ul>
     <h3 style="margin-top:16px;">📧 Email Templates (launch/email_templates/)</h3>
     <ul>
@@ -356,29 +473,31 @@ h1 span { color: #059669; }
     </ul>
     <h3 style="margin-top:16px;">📌 Key Links</h3>
     <ul>
-      <li><strong>Delaware LLC:</strong> corp.delaware.gov ($90, online)</li>
+      <li><strong>Virginia LLC:</strong> scc.virginia.gov/clk (online filing)</li>
       <li><strong>EIN:</strong> irs.gov/ein (free, instant)</li>
-      <li><strong>Mercury Bank:</strong> mercury.com (fintech-friendly)</li>
+      <li><strong>BOI Report:</strong> fincen.gov/boi (file within 90 days of formation)</li>
+      <li><strong>Mercury Bank:</strong> mercury.com</li>
       <li><strong>Stripe:</strong> dashboard.stripe.com/register</li>
-      <li><strong>Texas OCCC:</strong> occc.texas.gov</li>
-      <li><strong>ALECS Portal:</strong> occc.texas.gov/alecs</li>
-      <li><strong>NMLS:</strong> nmls.org (multi-state licensing)</li>
+      <li><strong>Virginia SCC BFI:</strong> scc.virginia.gov/pages/Bureau-of-Financial-Institutions</li>
+      <li><strong>SCC Portal:</strong> cis.scc.virginia.gov</li>
       <li><strong>Hudson Cook (attorney):</strong> hudsoncook.com</li>
       <li><strong>Surety Bonds:</strong> suretybonds.com</li>
+      <li><strong>DeepSeek API:</strong> platform.deepseek.com</li>
+      <li><strong>Plaid:</strong> dashboard.plaid.com</li>
     </ul>
     <h3 style="margin-top:16px;">⚠️ Critical Notes</h3>
     <ul>
-      <li><strong>Do NOT lend to strangers without a license.</strong> Friends/family under limited exemptions only until licensed</li>
-      <li>Your ML model AUC 0.756 is your competitive moat — lead with it in every pitch</li>
-      <li>Run the licensed lender partnership track in PARALLEL with your own license application</li>
-      <li>Save all receipts — LLC formation, EIN, bank, Stripe fees — all deductible</li>
-      <li>Once you have your license, the first 10 loans are about proving loss curves, not profit</li>
+      <li><span class="emphasis">Do NOT lend to strangers without a license.</span> Run pilot loans under limited exemptions until licensed.</li>
+      <li>Your XGBoost model AUC 0.678 is your competitive moat — lead with it in every pitch.</li>
+      <li>Run the licensed lender partnership track in PARALLEL with your own license application (Phase B).</li>
+      <li>Save all receipts — LLC, EIN, bank, Stripe fees — all deductible.</li>
+      <li>The first 10 loans are about proving loss curves, not profit. Gather data, refine the model.</li>
+      <li>Your bank partner requested: Plaid cash flow, Argyle payroll, rent/utility data, XGBoost model stack, LLM document intelligence, SHAP explanations, fair lending — all built ✅.</li>
     </ul>
   </div>
 </div>
 
 <script>
-// Counter auto-update
 function count() {
   const items = document.querySelectorAll('.item');
   const total = items.length;
@@ -389,8 +508,7 @@ function count() {
   document.getElementById('running').textContent = running;
   document.getElementById('remaining').textContent = total - done - running;
 }
-// Click to toggle
-document.querySelectorAll('.item .checkbox').forEach((cb, i) => {
+document.querySelectorAll('.item .checkbox').forEach(cb => {
   cb.parentElement.addEventListener('click', function(e) {
     if (e.target.closest('a')) return;
     this.classList.toggle('done');

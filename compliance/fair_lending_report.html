@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fair Lending Disparate Impact Analysis — Quarterly Report</title>
+<style>
+    :root {
+        --primary: #1a237e;
+        --primary-light: #3949ab;
+        --accent: #0d47a1;
+        --danger: #d32f2f;
+        --success: #2e7d32;
+        --warning: #f57f17;
+        --bg: #f5f5f5;
+        --card-bg: #ffffff;
+        --text: #212121;
+        --text-light: #616161;
+        --border: #e0e0e0;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        padding: 20px;
+    }
+    .container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    .header {
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        color: white;
+        padding: 32px 40px;
+        border-radius: 8px 8px 0 0;
+        text-align: center;
+    }
+    .header h1 {
+        font-size: 26px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        letter-spacing: 0.5px;
+    }
+    .header .subtitle {
+        font-size: 14px;
+        opacity: 0.85;
+    }
+    .header .date {
+        font-size: 13px;
+        opacity: 0.75;
+        margin-top: 8px;
+    }
+    .content {
+        background: var(--card-bg);
+        padding: 32px 40px;
+        border: 1px solid var(--border);
+        border-top: none;
+    }
+    .section-header {
+        color: var(--primary);
+        font-size: 18px;
+        font-weight: 600;
+        margin: 28px 0 14px 0;
+        padding-bottom: 8px;
+        border-bottom: 2px solid var(--primary);
+    }
+    h2.section-header:first-of-type { margin-top: 0; }
+    .exec-summary {
+        background: #e8eaf6;
+        padding: 18px 22px;
+        border-radius: 6px;
+        margin-bottom: 24px;
+        border-left: 4px solid var(--primary);
+    }
+    .exec-summary p { margin-bottom: 6px; }
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 14px 0 20px 0;
+        font-size: 14px;
+    }
+    .data-table thead th {
+        background: var(--primary);
+        color: white;
+        padding: 10px 14px;
+        text-align: left;
+        font-weight: 500;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .data-table tbody td {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+    }
+    .data-table tbody tr:hover {
+        background: #f0f0f0;
+    }
+    .data-table tbody tr:nth-child(even) {
+        background: #fafafa;
+    }
+    .status-pass {
+        background: #c8e6c9;
+        color: #1b5e20;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .status-fail {
+        background: #ffcdd2;
+        color: #b71c1c;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .status-neutral {
+        background: #e0e0e0;
+        color: #616161;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .flagged-section {
+        background: #fff3e0;
+        border-left: 4px solid var(--warning);
+        padding: 16px 20px;
+        border-radius: 4px;
+        margin: 18px 0;
+    }
+    .flagged-section.pass {
+        background: #e8f5e9;
+        border-left-color: var(--success);
+    }
+    .flagged-section ul {
+        margin: 10px 0 10px 20px;
+    }
+    .flagged-section li {
+        margin: 4px 0;
+    }
+    .proxy-section {
+        margin: 18px 0;
+    }
+    .alert {
+        padding: 14px 18px;
+        border-radius: 4px;
+        margin: 14px 0;
+        font-size: 13px;
+    }
+    .alert-danger {
+        background: #ffebee;
+        border-left: 4px solid var(--danger);
+        color: #b71c1c;
+    }
+    .alert-warning {
+        background: #fff8e1;
+        border-left: 4px solid var(--warning);
+        color: #e65100;
+    }
+    .methodology {
+        background: #f5f5f5;
+        padding: 18px 22px;
+        border-radius: 6px;
+        margin: 18px 0;
+        font-size: 13px;
+        border: 1px solid var(--border);
+    }
+    .methodology h3 {
+        color: var(--primary);
+        margin-bottom: 10px;
+        font-size: 15px;
+    }
+    .methodology ul {
+        margin: 6px 0 6px 18px;
+    }
+    .methodology li {
+        margin: 3px 0;
+    }
+    .attestation {
+        margin: 28px 0 10px 0;
+        padding: 20px 24px;
+        border: 2px dashed var(--primary);
+        border-radius: 6px;
+        background: #fafafa;
+    }
+    .attestation h3 {
+        color: var(--primary);
+        margin-bottom: 12px;
+    }
+    .attestation .sig-line {
+        margin: 16px 0;
+        border-bottom: 1px solid var(--text);
+        width: 320px;
+    }
+    .attestation .sig-label {
+        font-size: 12px;
+        color: var(--text-light);
+        margin-top: 2px;
+    }
+    .footer {
+        text-align: center;
+        padding: 16px;
+        background: var(--primary);
+        color: white;
+        border-radius: 0 0 8px 8px;
+        font-size: 12px;
+    }
+    .footer a { color: #90caf9; }
+    @media print {
+        body { background: white; padding: 0; }
+        .header { border-radius: 0; }
+        .content { border: none; }
+        .footer { border-radius: 0; }
+    }
+</style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <h1>Fair Lending Disparate Impact Analysis</h1>
+        <div class="subtitle">Bayesian Improved Surname Geocoding (BISG) Methodology</div>
+        <div class="date">Report Generated: 2026-05-10 07:05:24 | BISG Analyzer v1.0.0</div>
+    </div>
+
+    <div class="content">
+
+        <!-- Executive Summary -->
+        <div class="exec-summary">
+            <h2 style="color:var(--primary); margin-bottom:8px; font-size:16px;">📋 Executive Summary</h2>
+            <p><strong>Total Applications Reviewed:</strong> 5000</p>
+            <p><strong>Methodology:</strong> Bayesian Improved Surname Geocoding (BISG) for race/ethnicity estimation, combined with standard ECOA disparate impact analysis under the 4/5th rule.</p>
+            <p><strong>Groups Analyzed:</strong> White, Black, Hispanic, Asian, Native American/Other</p>
+            <p><strong>Threshold:</strong> Adverse Impact Ratio (AIR) &lt; 0.80 = potential disparate impact</p>
+            <p><strong>Status:</strong> ⚠️ Potential disparate impact detected — review recommended</p>
+        </div>
+
+        <!-- Approval Rates Table -->
+        <h2 class="section-header">📊 Approval Rates by Predicted Race/Ethnicity</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Group</th>
+                    <th>Sample Size</th>
+                    <th>Approval Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>White</td>
+                <td>4152</td>
+                <td>84.10%</td>
+            </tr>
+            <tr>
+                <td>Black</td>
+                <td>0</td>
+                <td>N/A</td>
+            </tr>
+            <tr>
+                <td>Hispanic</td>
+                <td>595</td>
+                <td>67.73%</td>
+            </tr>
+            <tr>
+                <td>Asian</td>
+                <td>253</td>
+                <td>98.81%</td>
+            </tr>
+            <tr>
+                <td>Native</td>
+                <td>0</td>
+                <td>N/A</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- Adverse Impact Ratios Table -->
+        <h2 class="section-header">📋 Adverse Impact Ratios — 4/5th Rule Analysis</h2>
+        <p style="margin-bottom:10px; font-size:13px; color:var(--text-light);">
+            Reference group (highest approval rate): <strong>Asian (98.81%)</strong>
+        </p>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Group</th>
+                    <th>Approval Rate</th>
+                    <th>Adverse Impact Ratio</th>
+                    <th>4/5th Rule Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>White</td>
+                <td>84.10%</td>
+                <td>0.851</td>
+                <td><span class="status-pass">PASS</span></td>
+            </tr>
+            <tr>
+                <td>Black</td>
+                <td>N/A</td>
+                <td>N/A</td>
+                <td><span class="status-neutral">No Data</span></td>
+            </tr>
+            <tr>
+                <td>Hispanic</td>
+                <td>67.73%</td>
+                <td>0.685</td>
+                <td><span class="status-fail">FAIL — Disparate Impact</span></td>
+            </tr>
+            <tr>
+                <td>Asian</td>
+                <td>98.81%</td>
+                <td>1.000</td>
+                <td><span class="status-pass">PASS</span></td>
+            </tr>
+            <tr>
+                <td>Native</td>
+                <td>N/A</td>
+                <td>N/A</td>
+                <td><span class="status-neutral">No Data</span></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- Flagged Groups -->
+        
+            <div class="flagged-section">
+                <h2 class="section-header">⚠️ Flagged Groups — Disparate Impact Detected</h2>
+                <p>The following groups fall below the 4/5th rule threshold (AIR &lt; 0.80):</p>
+                <ul><li><strong>Hispanic</strong> — AIR=0.685, Approval Rate=67.73%, n=595</li></ul>
+                <div class="alert alert-danger">
+                    <strong>Action Required:</strong> A deeper statistical analysis is recommended.
+                    Consider alternative model architectures, feature engineering, or
+                    threshold adjustments. Engage fair lending counsel.
+                </div>
+            </div>
+
+        <!-- Proxy Features -->
+        
+            <div class="proxy-section">
+                <h2 class="section-header">🔍 Proxy Feature Analysis</h2>
+                <p>Features with group mean deviation &gt; 0.30 (normalized scale) are flagged as potential proxies for protected characteristics:</p>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Max Deviation</th>
+                            <th>Overall Mean (norm)</th>
+                            <th>Group Means (norm)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                <tr>
+                    <td><strong>credit_score</strong></td>
+                    <td>0.6583</td>
+                    <td>0.6583</td>
+                    <td>White=0.6628  Black=0.0000  Hispanic=0.6021  Asian=0.7164  Native=0.0000</td>
+                </tr>
+                <tr>
+                    <td><strong>dti_ratio</strong></td>
+                    <td>0.5204</td>
+                    <td>0.5204</td>
+                    <td>White=0.5191  Black=0.0000  Hispanic=0.5644  Asian=0.4372  Native=0.0000</td>
+                </tr>
+                <tr>
+                    <td><strong>utilization</strong></td>
+                    <td>0.3527</td>
+                    <td>0.3527</td>
+                    <td>White=0.3493  Black=0.0000  Hispanic=0.4020  Asian=0.2922  Native=0.0000</td>
+                </tr>
+                <tr>
+                    <td><strong>annual_income</strong></td>
+                    <td>0.3210</td>
+                    <td>0.3210</td>
+                    <td>White=0.3268  Black=0.0000  Hispanic=0.2462  Asian=0.4031  Native=0.0000</td>
+                </tr>
+                    </tbody>
+                </table>
+                <div class="alert alert-warning">
+                    <strong>Caution:</strong> Features flagged as proxies may introduce
+                    disparate impact through correlation with protected characteristics.
+                    Consider alternative features or model adjustments.
+                </div>
+            </div>
+
+        <!-- Sample Composition -->
+        <h2 class="section-header">📈 Sample Composition</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Group</th>
+                    <th>Count</th>
+                    <th>Percentage</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>White</td>
+                <td>4152</td>
+                <td>83.0%</td>
+            </tr>
+            <tr>
+                <td>Black</td>
+                <td>0</td>
+                <td>0.0%</td>
+            </tr>
+            <tr>
+                <td>Hispanic</td>
+                <td>595</td>
+                <td>11.9%</td>
+            </tr>
+            <tr>
+                <td>Asian</td>
+                <td>253</td>
+                <td>5.1%</td>
+            </tr>
+            <tr>
+                <td>Native</td>
+                <td>0</td>
+                <td>0.0%</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- Methodology -->
+        <div class="methodology">
+            <h3>📐 Methodology Description</h3>
+            <p><strong>Bayesian Improved Surname Geocoding (BISG):</strong></p>
+            <p>The BISG method estimates the probability that an applicant belongs to a particular racial or ethnic group by combining two sources of information:</p>
+            <ul>
+                <li><strong>Surname analysis:</strong> P(race | surname) — derived from U.S. Census Bureau surname frequency data, which provides the racial/ethnic distribution associated with each surname.</li>
+                <li><strong>Geographic analysis:</strong> P(race | tract) — derived from Census tract-level demographic data (ACS 5-year estimates), representing the racial composition of the applicant's neighborhood.</li>
+            </ul>
+            <p>The two probabilities are combined using Bayes' rule:</p>
+            <p style="text-align:center; font-weight:600; margin:8px 0;">
+                P(race | surname, tract) ∝ P(race | surname) × P(race | tract)
+            </p>
+            <p><strong>4/5th Rule (Uniform Guidelines on Employee Selection Procedures):</strong></p>
+            <p>An adverse impact ratio is computed for each group as the group's approval rate divided by the approval rate of the highest-performing group. An AIR below 0.80 (80%) constitutes evidence of potential disparate impact under the Equal Credit Opportunity Act (Regulation B).</p>
+            <p><strong>Proxy Feature Detection:</strong> Continuous features are normalized to [0, 1], and group means are compared to the overall mean. A deviation exceeding 0.30 flags the feature as a potential proxy for protected characteristics.</p>
+            <p><strong>Limitations:</strong> BISG estimates are probabilistic and subject to misclassification error. Results should be validated against actual demographic data where available. The analysis identifies statistical disparities, not legal causation.</p>
+        </div>
+
+        <!-- Attestation -->
+        <div class="attestation">
+            <h3>📝 Compliance Officer Attestation</h3>
+            <p>I have reviewed the fair lending disparate impact analysis presented above. The analysis was conducted using the BISG methodology in accordance with regulatory guidance on fair lending monitoring under the Equal Credit Opportunity Act (15 U.S.C. § 1691) and Regulation B (12 CFR § 1002).</p>
+            <div style="margin-top:18px;">
+                <div class="sig-line"></div>
+                <div class="sig-label">Compliance Officer Signature</div>
+            </div>
+            <div style="margin-top:14px;">
+                <div class="sig-line"></div>
+                <div class="sig-label">Date</div>
+            </div>
+            <div style="margin-top:14px;">
+                <div class="sig-line"></div>
+                <div class="sig-label">Title</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        BISG Fair Lending Analyzer v1.0.0 &mdash; Confidential &mdash; For Regulatory Examination Use
+        <br>
+        <span style="opacity:0.7;">Report generated: 2026-05-10 07:05:24</span>
+    </div>
+
+</div>
+</body>
+</html>

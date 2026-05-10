@@ -325,7 +325,7 @@ def format_adverse_action_notice(
 
 <p><strong>From:</strong> PalmFi Lending LLC<br>
 123 Main Street, Suite 400<br>
-Austin, TX 78701</p>
+Richmond, VA 23219</p>
 
 <h2>Credit Decision</h2>
 <p>After reviewing your application, we regret to inform you that we are unable to
@@ -380,7 +380,7 @@ www.consumerfinance.gov/complaint/</a>
 </ul>
 
 <div class="footer">
-  <p>PalmFi Lending LLC | 123 Main Street, Suite 400 | Austin, TX 78701</p>
+  <p>PalmFi Lending LLC | 123 Main Street, Suite 400 | Richmond, VA 23219</p>
   <p>This notice is provided in compliance with Regulation B (Equal Credit
   Opportunity Act) and the Fair Credit Reporting Act.</p>
 </div>
