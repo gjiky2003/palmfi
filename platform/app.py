@@ -275,6 +275,11 @@ def index():
     return render_template('landing.html')
 
 
+@app.route('/flex-pay')
+def flex_pay():
+    return render_template('flex_pay.html')
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'GET':

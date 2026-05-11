@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Flex Pay - PalmFi</title>
+<script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#1a365d',accent:'#2b6cb0',gold:'#d4a017'}}}}</script></head>
+<body class="bg-gray-50 font-sans">
+<nav class="bg-primary text-white px-6 py-4 flex justify-between items-center shadow-lg">
+  <a href="/" class="text-xl font-bold"><i class="fas fa-leaf mr-2"></i>PalmFi</a>
+  <div class="flex items-center space-x-4">
+    <a href="/about" class="text-sm hover:text-gold transition hidden md:inline">About</a>
+    <a href="/flex-pay" class="text-sm hover:text-gold transition hidden md:inline">Flex Pay</a>
+    <a href="/terms" class="text-sm hover:text-gold transition hidden md:inline">Terms</a>
+    <a href="/login" class="bg-accent px-4 py-1.5 rounded-lg text-sm hover:bg-blue-700 transition">Sign In</a>
+    <a href="/register" class="bg-gold text-primary px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-yellow-500 transition">Get Started</a>
+  </div>
+</nav>
+
+<div class="max-w-5xl mx-auto px-4 py-12">
+
+  <!-- Header -->
+  <div class="text-center mb-12">
+    <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="fas fa-credit-card text-3xl text-accent"></i>
+    </div>
+    <h1 class="text-4xl font-bold text-primary">Flexible Payment Options</h1>
+    <p class="text-gray-500 mt-2 max-w-2xl mx-auto">Choose the payment plan that fits your life. No penalties, no surprises — just options that work for you.</p>
+  </div>
+
+  <!-- Payment Options Grid -->
+  <div class="grid md:grid-cols-3 gap-6 mb-12">
+    
+    <!-- Standard Monthly -->
+    <div class="bg-white rounded-2xl shadow-lg p-8 border-t-4 border-accent">
+      <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+        <i class="fas fa-calendar-alt text-2xl text-accent"></i>
+      </div>
+      <h2 class="text-xl font-bold text-primary mb-2">Standard Monthly</h2>
+      <p class="text-sm text-gray-500 mb-4">Fixed payment every month. Simple and predictable — you always know what you owe.</p>
+      <ul class="space-y-2 text-sm text-gray-600 mb-6">
+        <li><i class="fas fa-check text-green-500 mr-2"></i>Fixed amount, same day each month</li>
+        <li><i class="fas fa-check text-green-500 mr-2"></i>Full amortization schedule provided upfront</li>
+        <li><i class="fas fa-check text-green-500 mr-2"></i>No prepayment penalties</li>
+        <li><i class="fas fa-check text-green-500 mr-2"></i>Terms from 6 to 60 months</li>
+      </ul>
+      <div class="text-2xl font-bold text-primary mb-1">$X.XX</div>
+      <div class="text-xs text-gray-400 mb-4">per month per $1,000 borrowed*</div>
+    </div>
+
+    <!-- Bi-Weekly -->
+    <div class="bg-white rounded-2xl shadow-lg p-8 border-t-4 border-gold">
+      <div class="w-14 h-14 bg-yellow-100 rounded-xl flex items-center justify-center mb-4">
+        <i class="fas fa-calendar-check text-2xl text-gold"></i>
+      </div>
+      <h2 class="text-xl font-bold text-primary mb-2">Bi-Weekly</h2>
+      <p class="text-sm text-gray-500 mb-4">Pay every two weeks. You'll make 26 half-payments per year — that's one extra payment annually, reducing your balance faster.</p>
+      <ul class="space-y-2 text-sm text-gray-600 mb-6">
+        <li><i class="fas fa-check text-green-500 mr-2"></i>26 payments per year (vs 12 monthly)</li>
+        <li><i class="fas fa-check text-green-500 mr-2"></i>Pay off your loan faster with no extra cost</li>
+        <li><i class="fas fa-check text-green-500 mr-2"></i>Aligns with common pay schedules</li>
+        <li><i class="fas fa-check text-green-500 mr-2"></i>Switch anytime at no charge</li>
+      </ul>
+      <div class="text-2xl font-bold text-primary mb-1">$X.XX</div>
+      <div class="text-xs text-gray-400 mb-4">every 2 weeks per $1,000 borrowed*</div>
+    </div>
+
+    <!-- Income Share -->
+    <div class="bg-white rounded-2xl shadow-lg p-8 border-t-4 border-green-500">
+      <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+        <i class="fas fa-chart-line text-2xl text-green-600"></i>
+      </div>
+      <h2 class="text-xl font-bold text-primary mb-2">Income Share</h2>
+      <p class="text-sm text-gray-500 mb-4">Pay a percentage of your actual income. Earn less, pay less. Earn more, pay it off faster. Flexible when you need it most.</p>
+      <ul class="space-y-2 text-sm text-gray-600 mb-6">
+        <li><i class="fas fa-check text-green-500 mr-2"></i>Pay a fixed % of your monthly income</li>
+        <li><i class="fas fa-check text-green-500 mr-2"></i>Lower payments in low-income months</li>
+        <li><i class="fas fa-check text-green-500 mr-2"></i>Capped at 150% of standard payment</li>
+        <li><i class="fas fa-check text-green-500 mr-2"></i>Switch between standard and income-share</li>
+      </ul>
+      <div class="text-xs text-blue-600 font-semibold mb-4">Available after loan origination</div>
+    </div>
+  </div>
+
+  <!-- How It Works -->
+  <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+    <h2 class="text-2xl font-bold text-primary mb-6 text-center">How Payments Work at PalmFi</h2>
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="text-center">
+        <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold">1</div>
+        <h3 class="font-semibold mb-1">Pick Your Plan</h3>
+        <p class="text-sm text-gray-500">Choose monthly, bi-weekly, or income-share when you accept your loan offer.</p>
+      </div>
+      <div class="text-center">
+        <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold">2</div>
+        <h3 class="font-semibold mb-1">Auto-Pay Every Period</h3>
+        <p class="text-sm text-gray-500">Set up automatic payments and never miss a due date. You can change or cancel anytime.</p>
+      </div>
+      <div class="text-center">
+        <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold">3</div>
+        <h3 class="font-semibold mb-1">Switch Anytime</h3>
+        <p class="text-sm text-gray-500">Need to change your plan? No problem. Switch between payment options with no fees.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Benefits Summary -->
+  <div class="bg-gradient-to-br from-primary to-accent text-white rounded-2xl shadow-lg p-8 mb-8">
+    <h2 class="text-2xl font-bold mb-6 text-center">Why Flexible Payments?</h2>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="flex items-start space-x-4">
+        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-hand-holding-usd"></i></div>
+        <div>
+          <h3 class="font-semibold">Match Your Cash Flow</h3>
+          <p class="text-sm text-blue-200">Align payments with how you actually get paid — weekly, bi-weekly, or monthly.</p>
+        </div>
+      </div>
+      <div class="flex items-start space-x-4">
+        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-coins"></i></div>
+        <div>
+          <h3 class="font-semibold">Pay Less Interest</h3>
+          <p class="text-sm text-blue-200">Bi-weekly and income-share options reduce your principal faster, saving you money.</p>
+        </div>
+      </div>
+      <div class="flex items-start space-x-4">
+        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-shield-alt"></i></div>
+        <div>
+          <h3 class="font-semibold">No Hidden Fees</h3>
+          <p class="text-sm text-blue-200">No prepayment penalties, no switch fees, no surprises. What you see is what you get.</p>
+        </div>
+      </div>
+      <div class="flex items-start space-x-4">
+        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-mobile-alt"></i></div>
+        <div>
+          <h3 class="font-semibold">Manage From Your Phone</h3>
+          <p class="text-sm text-blue-200">View your schedule, make extra payments, or switch plans — all from your PalmFi dashboard.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="text-center">
+    <h2 class="text-2xl font-bold text-primary mb-4">Ready to Get Started?</h2>
+    <p class="text-gray-500 mb-6">Apply in 2 minutes. Get a decision in seconds.</p>
+    <a href="/register" class="bg-accent text-white px-10 py-4 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg text-lg inline-block"><i class="fas fa-rocket mr-2"></i>Get Started</a>
+    <p class="text-xs text-gray-400 mt-3">Checking your rate won't affect your credit score</p>
+  </div>
+
+  <div class="text-center mt-8">
+    <p class="text-xs text-gray-400">* Actual payment amounts depend on your loan amount, APR, and selected term. See your personalized offer after applying.</p>
+  </div>
+
+</div>
+
+<footer class="bg-primary text-white py-8">
+  <div class="max-w-6xl mx-auto px-4 text-center text-sm text-blue-200">
+    <p class="mb-2"><i class="fas fa-leaf mr-1"></i>PalmFi — AI-Native Lending</p>
+    <a href="/about" class="hover:text-white">About</a> | <a href="/flex-pay" class="hover:text-white">Flex Pay</a> | <a href="/terms" class="hover:text-white">Terms</a>
+  </div>
+</footer>
+</body></html>
